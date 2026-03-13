@@ -10,8 +10,15 @@ interface EmergencyNoticeBoxProps {
 const EmergencyNoticeBox: React.FC<EmergencyNoticeBoxProps> = ({ onClick }) => (
   <motion.button 
     onClick={onClick}
-    animate={{ scale: [1, 1.02, 1] }}
-    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+    animate={{ 
+      scale: [1, 1.03, 1],
+      boxShadow: [
+        "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "0 0 15px 2px rgba(245, 158, 11, 0.5)",
+        "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+      ]
+    }}
+    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     className="w-full bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 p-3 rounded-r-xl shadow-sm mb-4 flex items-center justify-between gap-3 text-left transition-transform active:scale-[0.98]"
   >
     <div className="flex items-start gap-3">
