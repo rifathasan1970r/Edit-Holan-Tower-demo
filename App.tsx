@@ -452,15 +452,6 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Image Slider Section (Only Home) */}
-            {currentView === 'HOME' && (
-              <div className="pb-4">
-                <div className="flex justify-between items-center mb-3 px-1">
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">গ্যালারি</h3>
-                </div>
-                <ImageSlider />
-              </div>
-            )}
 
             {/* Extra Menu Items (Only Menu) */}
             {currentView === 'MENU' && (
