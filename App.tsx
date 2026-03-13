@@ -26,6 +26,8 @@ import { RechargeRulesView } from './components/RechargeRulesView';
 import { PullToRefresh } from './components/PullToRefresh';
 import { PolicyView } from './components/PolicyView';
 import { MaintenancePopup } from './components/MaintenancePopup';
+import EmergencyNoticeBox from './src/components/EmergencyNoticeBox';
+import { EmergencyNoticeDetailView } from './src/components/EmergencyNoticeDetailView';
 import { PDFDownloadPage } from './components/PDFDownloadPage';
 import { ContactView } from './components/ContactView';
 import { DownloadAppView } from './components/DownloadAppView';
@@ -355,6 +357,8 @@ const App: React.FC = () => {
 
       case 'DOWNLOAD_APP':
         return <DownloadAppView onBack={() => setCurrentView('MENU')} />;
+      case 'EMERGENCY_NOTICE_DETAIL':
+        return <EmergencyNoticeDetailView onBack={() => setCurrentView('HOME')} />;
       case 'MENU':
       case 'HOME':
       default:
@@ -443,6 +447,11 @@ const App: React.FC = () => {
                   </motion.button>
                 ))}
               </div>
+              {(currentView === 'HOME' || currentView === 'MENU') && (
+                <div className="mt-6">
+                  <EmergencyNoticeBox onClick={() => setCurrentView('EMERGENCY_NOTICE_DETAIL')} />
+                </div>
+              )}
             </div>
 
             {/* Due Payment Marquee (Only Home) */}
