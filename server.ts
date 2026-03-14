@@ -10,6 +10,15 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Middleware to handle SPA fallback for .html routes
+  // This ensures that direct links like /menu.html are handled by the main app
+  app.use((req, res, next) => {
+    if (req.path.endsWith('.html') && req.path !== '/index.html' && req.path !== '/pdf.html') {
+      req.url = '/';
+    }
+    next();
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
