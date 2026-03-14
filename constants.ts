@@ -297,6 +297,30 @@ export const TRANSLATIONS = {
   }
 };
 
+export const VIEW_TO_PATH: Record<string, string> = {
+  HOME: '/',
+  MENU: '/menu.html',
+  DESCO: '/desco.html',
+  DESCO_INFO: '/desco-info.html',
+  DESCO_RULES: '/desco-rules.html',
+  ACCOUNTS: '/accounts.html',
+  SERVICE_CHARGE: '/service-charge.html',
+  EMERGENCY: '/emergency.html',
+  TO_LET: '/to-let.html',
+  WATER_BILL: '/water-bill.html',
+  LIFT_INSTRUCTIONS: '/lift-instructions.html',
+  MAINTENANCE: '/maintenance.html',
+  SETTINGS: '/settings.html',
+  PRAYER_TIME: '/prayer-time.html',
+  RECHARGE_RULES: '/recharge-rules.html',
+  POLICY: '/policy.html',
+  CONTACT: '/contact.html',
+  DOWNLOAD_APP: '/download-app.html',
+  EMERGENCY_NOTICE_DETAIL: '/emergency-notice.html',
+  MAP_ROUTES: '/map-routes.html',
+  AI_ASSISTANT: '/assistant.html'
+};
+
 export const BOTTOM_NAV_ITEMS = [
   { id: 'service', label: 'সার্ভিস চার্জ', icon: CreditCard, view: 'SERVICE_CHARGE' },
   { id: 'desco', label: 'ডেসকো', icon: Zap, view: 'DESCO' },

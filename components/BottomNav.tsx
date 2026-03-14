@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BOTTOM_NAV_ITEMS } from '../constants';
+import { BOTTOM_NAV_ITEMS, VIEW_TO_PATH } from '../constants';
 import { ViewState } from '../types';
 
 interface BottomNavProps {
@@ -21,7 +21,7 @@ const NavButton = React.memo(({ item, isActive }: NavButtonProps) => {
 
   return (
     <button
-      onClick={() => navigate(item.view === 'HOME' ? '/' : `/${item.view.toLowerCase().replace(/_/g, '-')}`)}
+      onClick={() => navigate(VIEW_TO_PATH[item.view] || '/')}
       className="relative flex flex-col items-center justify-end w-16 h-full group outline-none"
     >
       {isHome ? (

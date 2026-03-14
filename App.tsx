@@ -4,7 +4,7 @@ import { Building2, Phone, MapPin, ChevronRight, User, CloudSun, Calendar, Zap, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './lib/supabaseClient';
 
-import { APP_NAME, MENU_ITEMS, TRANSLATIONS, MENU_NOTICE_TEXT, DESCO_NOTICE_TEXT, SERVICE_CHARGE_NOTICE_TEXT, EMERGENCY_NOTICE_TEXT } from './constants';
+import { APP_NAME, MENU_ITEMS, TRANSLATIONS, MENU_NOTICE_TEXT, DESCO_NOTICE_TEXT, SERVICE_CHARGE_NOTICE_TEXT, EMERGENCY_NOTICE_TEXT, VIEW_TO_PATH } from './constants';
 import { ViewState } from './types';
 import NoticeBoard from './components/NoticeBoard';
 import BottomNav from './components/BottomNav';
@@ -33,30 +33,6 @@ import { PDFDownloadPage } from './components/PDFDownloadPage';
 import { ContactView } from './components/ContactView';
 import { DownloadAppView } from './components/DownloadAppView';
 import { DuePaymentMarquee } from './components/DuePaymentMarquee';
-
-const VIEW_TO_PATH: Record<ViewState, string> = {
-  HOME: '/',
-  MENU: '/menu.html',
-  DESCO: '/desco.html',
-  DESCO_INFO: '/desco-info.html',
-  DESCO_RULES: '/desco-rules.html',
-  ACCOUNTS: '/accounts.html',
-  SERVICE_CHARGE: '/service-charge.html',
-  EMERGENCY: '/emergency.html',
-  TO_LET: '/to-let.html',
-  WATER_BILL: '/water-bill.html',
-  LIFT_INSTRUCTIONS: '/lift-instructions.html',
-  MAINTENANCE: '/maintenance.html',
-  SETTINGS: '/settings.html',
-  PRAYER_TIME: '/prayer-time.html',
-  RECHARGE_RULES: '/recharge-rules.html',
-  POLICY: '/policy.html',
-  CONTACT: '/contact.html',
-  DOWNLOAD_APP: '/download-app.html',
-  EMERGENCY_NOTICE_DETAIL: '/emergency-notice.html',
-  MAP_ROUTES: '/map-routes.html',
-  AI_ASSISTANT: '/assistant.html'
-};
 
 const PATH_TO_VIEW: Record<string, ViewState> = Object.entries(VIEW_TO_PATH).reduce(
   (acc, [view, path]) => ({ ...acc, [path]: view as ViewState }),
