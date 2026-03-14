@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft, ArrowUpDown, Phone, Users, Weight, DoorOpen, Ban, Wind, Bell, PowerOff, ChevronsUpDown, Hand, UserCheck, Trash2, VolumeX, Building
 } from 'lucide-react';
+import { ServiceLayout } from './ServiceLayout';
 
 interface LiftInstructionsViewProps {
   onBack: () => void;

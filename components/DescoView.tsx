@@ -4,6 +4,7 @@ import { Search, Zap, Filter, Check, Copy, Hash, ExternalLink, ShieldCheck, Ligh
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewState } from '../types';
 import { FLAT_OWNERS as DESCO_DATA } from '../constants';
+import { ServiceLayout } from './ServiceLayout';
 
 // Constants
 const EKPAY_LINK = "https://ekpay.gov.bd/#/payment/electricity-bill";
@@ -255,7 +256,7 @@ export const DescoView: React.FC<DescoViewProps> = ({ lang = 'bn', setView }) =>
   };
 
   return (
-    <div className="pb-28 bg-slate-50 dark:bg-slate-900 min-h-screen relative overflow-hidden font-sans transition-colors duration-300">
+    <ServiceLayout setView={setView}>
       
       {/* Background Decor */}
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-100/40 via-white to-slate-50 dark:from-indigo-900/20 dark:via-slate-900 dark:to-slate-900 pointer-events-none" />
@@ -656,6 +657,6 @@ export const DescoView: React.FC<DescoViewProps> = ({ lang = 'bn', setView }) =>
         document.body
       )}
 
-    </div>
+    </ServiceLayout>
   );
 };

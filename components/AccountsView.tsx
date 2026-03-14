@@ -2,9 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, CreditCard, Banknote, Droplets, Trash2, Zap, User, MoreHorizontal, Calculator, Calendar, CalendarDays, ChevronRight, Save, X, Plus, Minus, PieChart, ArrowUpRight, ArrowDownRight, Lock, Unlock, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
+import EmergencyNoticeBox from '../src/components/EmergencyNoticeBox';
 
 interface AccountsViewProps {
   onBack: () => void;
+  setView: (view: string) => void;
 }
 
 interface OtherItem {
@@ -48,7 +50,7 @@ const getDefaultAccounts = (year: number): MonthlyAccountData[] =>
     expense: { water: 0, electricity: 0, garbage: 0, caretaker: 0, nightGuard: 0, otherItems: [] }
   }));
 
-export const AccountsView: React.FC<AccountsViewProps> = ({ onBack }) => {
+export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) => {
   const currentMonthName = useMemo(() => {
     const date = new Date();
     let monthIndex = date.getMonth() - 1;
@@ -326,6 +328,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack }) => {
       </div>
 
       <div className="w-full max-w-md mx-auto px-4 py-6 space-y-6">
+        <EmergencyNoticeBox onClick={() => setView('EMERGENCY_NOTICE_DETAIL')} />
         {/* Title Section */}
         <div className="space-y-4">
           <div className="space-y-1">

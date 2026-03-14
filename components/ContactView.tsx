@@ -1,9 +1,11 @@
 import React from 'react';
 import { ArrowLeft, Phone, MessageCircle, ShieldCheck, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ServiceLayout } from './ServiceLayout';
 
 interface ContactViewProps {
   onBack: () => void;
+  setView: (view: string) => void;
 }
 
 interface Contact {
@@ -46,7 +48,7 @@ const CONTACTS: Contact[] = [
   }
 ];
 
-export const ContactView: React.FC<ContactViewProps> = ({ onBack }) => {
+export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => {
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone}`;
   };
@@ -58,7 +60,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="pb-24 relative">
+    <ServiceLayout setView={setView}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button 
@@ -152,6 +154,6 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack }) => {
           জরুরী পরিস্থিতিতে সরাসরি কল করাই শ্রেয়।
         </p>
       </div>
-    </div>
+    </ServiceLayout>
   );
 };

@@ -320,7 +320,7 @@ const App: React.FC = () => {
         return <DescoRulesView onBack={() => setCurrentView('DESCO')} />;
 
       case 'ACCOUNTS':
-        return <AccountsView onBack={() => setCurrentView('MENU')} />;
+        return <AccountsView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />;
 
       case 'MAP_ROUTES':
         return <MapRoutesView onBack={() => setCurrentView('MENU')} />;
