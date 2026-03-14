@@ -83,6 +83,14 @@ const App: React.FC = () => {
     }
   }, [selectedUnit, navigate, location.search]);
 
+  // Handle legacy hash URLs by redirecting to clean URLs
+  useEffect(() => {
+    if (location.hash && location.hash.startsWith('#/')) {
+      const cleanPath = location.hash.substring(1);
+      navigate(cleanPath, { replace: true });
+    }
+  }, [location.hash, navigate]);
+
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   // Persist state removed to always start at HOME
