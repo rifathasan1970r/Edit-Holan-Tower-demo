@@ -154,23 +154,28 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
 
   if (previewNotice) {
     return (
-      <div className="space-y-4 pb-20 h-[calc(100vh-5rem)] flex flex-col">
+      <div className="space-y-4 pb-20 min-h-[calc(100vh-5rem)] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between shrink-0 bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setPreviewNotice(null)} 
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0"
             >
               <ChevronLeft size={24} className="text-slate-600 dark:text-slate-300" />
             </button>
-            <h3 className="font-bold text-slate-800 dark:text-white line-clamp-1">
-              {previewNotice.title}
-            </h3>
+            <div className="flex flex-col">
+              <h3 className="font-bold text-slate-800 dark:text-white line-clamp-1 text-sm sm:text-base">
+                {previewNotice.title}
+              </h3>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                {previewNotice.date}
+              </span>
+            </div>
           </div>
           <button 
             onClick={() => window.open(previewNotice.driveLink, '_blank')}
-            className="p-2.5 rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 hover:bg-primary-100 transition-all"
+            className="p-2.5 rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 hover:bg-primary-100 transition-all shrink-0"
             title="ব্রাউজারে ওপেন করুন"
           >
             <ExternalLink size={20} />
@@ -178,11 +183,14 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
         </div>
 
         {/* PDF Preview Container */}
-        <div className="flex-1 w-full flex flex-col items-center justify-center py-4">
-          <div className="w-full max-w-sm aspect-[1/1.4] bg-white dark:bg-slate-800 rounded-3xl shadow-md overflow-hidden border border-slate-200 dark:border-slate-700">
+        <div className="flex-1 w-full flex flex-col items-center justify-start">
+          <div 
+            className="w-full bg-white shadow-sm overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl" 
+            style={{ aspectRatio: '1 / 1.414', maxHeight: '75vh' }}
+          >
             <iframe 
               src={getPreviewLink(previewNotice.driveLink)} 
-              className="w-full h-full border-none"
+              className="w-full h-full border-none bg-white"
               title="PDF Preview"
               allow="autoplay"
             />
