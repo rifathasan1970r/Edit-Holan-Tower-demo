@@ -36,26 +36,26 @@ import { DuePaymentMarquee } from './components/DuePaymentMarquee';
 
 const VIEW_TO_PATH: Record<ViewState, string> = {
   HOME: '/',
-  MENU: '/menu',
-  DESCO: '/desco',
-  DESCO_INFO: '/desco-info',
-  DESCO_RULES: '/desco-rules',
-  ACCOUNTS: '/accounts',
-  SERVICE_CHARGE: '/service-charge',
-  EMERGENCY: '/emergency',
-  TO_LET: '/to-let',
-  WATER_BILL: '/water-bill',
-  LIFT_INSTRUCTIONS: '/lift-instructions',
-  MAINTENANCE: '/maintenance',
-  SETTINGS: '/settings',
-  PRAYER_TIME: '/prayer-time',
-  RECHARGE_RULES: '/recharge-rules',
-  POLICY: '/policy',
-  CONTACT: '/contact',
-  DOWNLOAD_APP: '/download-app',
-  EMERGENCY_NOTICE_DETAIL: '/emergency-notice',
-  MAP_ROUTES: '/map-routes',
-  AI_ASSISTANT: '/assistant'
+  MENU: '/menu.html',
+  DESCO: '/desco.html',
+  DESCO_INFO: '/desco-info.html',
+  DESCO_RULES: '/desco-rules.html',
+  ACCOUNTS: '/accounts.html',
+  SERVICE_CHARGE: '/service-charge.html',
+  EMERGENCY: '/emergency.html',
+  TO_LET: '/to-let.html',
+  WATER_BILL: '/water-bill.html',
+  LIFT_INSTRUCTIONS: '/lift-instructions.html',
+  MAINTENANCE: '/maintenance.html',
+  SETTINGS: '/settings.html',
+  PRAYER_TIME: '/prayer-time.html',
+  RECHARGE_RULES: '/recharge-rules.html',
+  POLICY: '/policy.html',
+  CONTACT: '/contact.html',
+  DOWNLOAD_APP: '/download-app.html',
+  EMERGENCY_NOTICE_DETAIL: '/emergency-notice.html',
+  MAP_ROUTES: '/map-routes.html',
+  AI_ASSISTANT: '/assistant.html'
 };
 
 const PATH_TO_VIEW: Record<string, ViewState> = Object.entries(VIEW_TO_PATH).reduce(
@@ -369,7 +369,7 @@ const App: React.FC = () => {
           </div>
         } />
 
-        <Route path="/assistant" element={
+        <Route path="/assistant.html" element={
           <div className="space-y-6 pb-6">
             {/* Premium Hero Dashboard for Home */}
             <div className="relative rounded-3xl overflow-hidden shadow-2xl group transition-all duration-500">
@@ -456,7 +456,7 @@ const App: React.FC = () => {
             </div>
           </div>
         } />
-        <Route path="/menu" element={
+        <Route path="/menu.html" element={
           <div className="space-y-6 pb-6">
             <div>
               <div className="mb-6">
@@ -510,24 +510,24 @@ const App: React.FC = () => {
           </div>
         } />
 
-        <Route path="/service-charge" element={<ServiceChargeView selectedUnit={selectedUnit} onUnitSelect={setSelectedUnit} showSummaryList={showSummaryList} onSummaryToggle={setShowSummaryList} />} />
-        <Route path="/desco" element={<DescoView setView={setCurrentView} />} />
-        <Route path="/desco-info" element={<DescoInfoView onBack={() => setCurrentView('DESCO')} />} />
-        <Route path="/desco-rules" element={<DescoRulesView onBack={() => setCurrentView('DESCO')} />} />
-        <Route path="/accounts" element={<AccountsView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
-        <Route path="/map-routes" element={<MapRoutesView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/to-let" element={<ToLetView />} />
-        <Route path="/emergency" element={<EmergencyView />} />
-        <Route path="/water-bill" element={<WaterBillView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/lift-instructions" element={<LiftInstructionsView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/maintenance" element={<MaintenanceView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
-        <Route path="/settings" element={<SettingsView onBack={() => setCurrentView('MENU')} darkMode={darkMode} toggleDarkMode={toggleDarkMode} maintenanceMode={maintenanceMode} />} />
-        <Route path="/prayer-time" element={<PrayerTimeView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/recharge-rules" element={<RechargeRulesView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/policy" element={<PolicyView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/contact" element={<ContactView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
-        <Route path="/download-app" element={<DownloadAppView onBack={() => setCurrentView('MENU')} />} />
-        <Route path="/emergency-notice" element={<EmergencyNoticeDetailView onBack={() => setCurrentView('HOME')} />} />
+        <Route path="/service-charge.html" element={<ServiceChargeView selectedUnit={selectedUnit} onUnitSelect={setSelectedUnit} showSummaryList={showSummaryList} onSummaryToggle={setShowSummaryList} />} />
+        <Route path="/desco.html" element={<DescoView setView={setCurrentView} />} />
+        <Route path="/desco-info.html" element={<DescoInfoView onBack={() => setCurrentView('DESCO')} />} />
+        <Route path="/desco-rules.html" element={<DescoRulesView onBack={() => setCurrentView('DESCO')} />} />
+        <Route path="/accounts.html" element={<AccountsView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
+        <Route path="/map-routes.html" element={<MapRoutesView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/to-let.html" element={<ToLetView />} />
+        <Route path="/emergency.html" element={<EmergencyView />} />
+        <Route path="/water-bill.html" element={<WaterBillView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/lift-instructions.html" element={<LiftInstructionsView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/maintenance.html" element={<MaintenanceView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
+        <Route path="/settings.html" element={<SettingsView onBack={() => setCurrentView('MENU')} darkMode={darkMode} toggleDarkMode={toggleDarkMode} maintenanceMode={maintenanceMode} />} />
+        <Route path="/prayer-time.html" element={<PrayerTimeView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/recharge-rules.html" element={<RechargeRulesView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/policy.html" element={<PolicyView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/contact.html" element={<ContactView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
+        <Route path="/download-app.html" element={<DownloadAppView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/emergency-notice.html" element={<EmergencyNoticeDetailView onBack={() => setCurrentView('HOME')} />} />
         
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
