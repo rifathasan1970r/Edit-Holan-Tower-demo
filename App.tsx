@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
 import { Building2, Phone, MapPin, ChevronRight, User, CloudSun, Calendar, Zap, Key, Bed, Bath, Maximize, AlertTriangle, X, LogOut, Sun, Moon, Sunset, Wrench, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './lib/supabaseClient';
@@ -33,38 +34,78 @@ import { ContactView } from './components/ContactView';
 import { DownloadAppView } from './components/DownloadAppView';
 import { DuePaymentMarquee } from './components/DuePaymentMarquee';
 
+const VIEW_TO_PATH: Record<ViewState, string> = {
+  HOME: '/',
+  MENU: '/menu',
+  DESCO: '/desco',
+  DESCO_INFO: '/desco-info',
+  DESCO_RULES: '/desco-rules',
+  ACCOUNTS: '/accounts',
+  SERVICE_CHARGE: '/service-charge',
+  EMERGENCY: '/emergency',
+  TO_LET: '/to-let',
+  WATER_BILL: '/water-bill',
+  LIFT_INSTRUCTIONS: '/lift-instructions',
+  MAINTENANCE: '/maintenance',
+  SETTINGS: '/settings',
+  PRAYER_TIME: '/prayer-time',
+  RECHARGE_RULES: '/recharge-rules',
+  POLICY: '/policy',
+  CONTACT: '/contact',
+  DOWNLOAD_APP: '/download-app',
+  EMERGENCY_NOTICE_DETAIL: '/emergency-notice',
+  MAP_ROUTES: '/map-routes',
+  AI_ASSISTANT: '/assistant'
+};
+
+const PATH_TO_VIEW: Record<string, ViewState> = Object.entries(VIEW_TO_PATH).reduce(
+  (acc, [view, path]) => ({ ...acc, [path]: view as ViewState }),
+  {}
+);
+
 const App: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const isExitingRef = useRef(false);
+
+  // Sync currentView with URL path
+  const currentView = useMemo(() => {
+    const path = location.pathname;
+    return PATH_TO_VIEW[path] || 'HOME';
+  }, [location.pathname]);
+
+  const setCurrentView = (view: ViewState) => {
+    navigate(VIEW_TO_PATH[view] || '/');
+  };
 
   // Check for PDF Download Mode
   const [isPdfMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('mode') === 'pdf_download';
-    }
-    return false;
+    const params = new URLSearchParams(location.search);
+    return params.get('mode') === 'pdf_download';
   });
 
   if (isPdfMode) {
     return <PDFDownloadPage />;
   }
 
-  const [currentView, setCurrentView] = useState<ViewState>(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const viewParam = params.get('view');
-      if (viewParam) return viewParam as ViewState;
-    }
-    return 'HOME';
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('unit') || null;
   });
 
-  const [selectedUnit, setSelectedUnit] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('unit') || null;
+  // Update URL when unit changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (selectedUnit) {
+      params.set('unit', selectedUnit);
+    } else {
+      params.delete('unit');
     }
-    return null;
-  });
+    const newSearch = params.toString();
+    if (newSearch !== location.search.substring(1)) {
+      navigate({ search: newSearch }, { replace: true });
+    }
+  }, [selectedUnit, navigate, location.search]);
 
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
@@ -207,64 +248,9 @@ const App: React.FC = () => {
   }, [isReloadEnabled]);
 
   // Advanced Back Navigation Support
-  useEffect(() => {
-    // Initialize history state if not already set
-    if (!window.history.state || window.history.state.view === undefined) {
-      window.history.replaceState({ view: 'BASE' }, '');
-      window.history.pushState({ view: 'HOME', unit: null, summary: false }, '');
-    }
-
-    const handlePopState = (event: PopStateEvent) => {
-      const state = event.state;
-      
-      if (state) {
-        if (state.view === 'BASE') {
-          // We hit the bottom of our app history
-          setShowExitDialog(true);
-          // Push the current view back so we stay in the app
-          window.history.pushState({ view: currentView, unit: selectedUnit, summary: showSummaryList }, '');
-        } else if (state.view) {
-          // Navigate to the view stored in history
-          setCurrentView(state.view);
-          setSelectedUnit(state.unit !== undefined ? state.unit : null);
-          setShowSummaryList(state.summary !== undefined ? !!state.summary : false);
-        }
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentView, selectedUnit, showSummaryList]);
-
   // Scroll to top on view or unit change
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [currentView, selectedUnit, showSummaryList]);
-
-  // Sync manual navigation with History API
-  useEffect(() => {
-    const state = window.history.state;
-    if (!state || state.view === 'BASE') return;
-
-    const viewChanged = state.view !== currentView;
-    const summaryChanged = state.summary !== showSummaryList;
-    const unitChanged = state.unit !== selectedUnit;
-
-    // Only push/replace state if something actually changed
-    if (viewChanged || summaryChanged || unitChanged) {
-      // Rule: When switching/sliding between units, DO NOT create new history entries.
-      // If we are already in a unit and we change to another unit, use replaceState.
-      const isSlidingUnits = !viewChanged && !summaryChanged && unitChanged && state.unit !== null && selectedUnit !== null;
-      
-      // Rule: Switching between Grid and Summary List -> replaceState (to keep "All Unit List" as one level)
-      const isSwitchingListType = !viewChanged && summaryChanged && !unitChanged && selectedUnit === null;
-
-      if (isSlidingUnits || isSwitchingListType) {
-        window.history.replaceState({ view: currentView, unit: selectedUnit, summary: showSummaryList }, '');
-      } else {
-        window.history.pushState({ view: currentView, unit: selectedUnit, summary: showSummaryList }, '');
-      }
-    }
   }, [currentView, selectedUnit, showSummaryList]);
 
   const t = TRANSLATIONS['bn']; // Default to Bangla for now, can be dynamic if needed
@@ -293,138 +279,65 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    switch (currentView) {
-      case 'SERVICE_CHARGE':
-        return (
-          <ServiceChargeView 
-            selectedUnit={selectedUnit} 
-            onUnitSelect={(unit) => {
-              setSelectedUnit(unit);
-            }}
-            showSummaryList={showSummaryList}
-            onSummaryToggle={(show) => {
-              // If we want to treat Grid/Summary as same level, we just set state
-              // The useEffect handles replaceState for us
-              setShowSummaryList(show);
-            }}
-          />
-        );
-      
-      case 'DESCO':
-        return <DescoView setView={setCurrentView} />;
-
-      case 'DESCO_INFO':
-        return <DescoInfoView onBack={() => setCurrentView('DESCO')} />;
-
-      case 'DESCO_RULES':
-        return <DescoRulesView onBack={() => setCurrentView('DESCO')} />;
-
-      case 'ACCOUNTS':
-        return <AccountsView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />;
-
-      case 'MAP_ROUTES':
-        return <MapRoutesView onBack={() => setCurrentView('MENU')} />;
-
-      case 'TO_LET':
-        return <ToLetView />;
-
-      case 'EMERGENCY':
-        return <EmergencyView />;
-
-      case 'WATER_BILL':
-        return <WaterBillView onBack={() => setCurrentView('MENU')} />;
-
-      case 'LIFT_INSTRUCTIONS':
-        return <LiftInstructionsView onBack={() => setCurrentView('MENU')} />;
-
-      case 'MAINTENANCE':
-        return <MaintenanceView onBack={() => setCurrentView('MENU')} />;
-
-      case 'SETTINGS':
-        return <SettingsView onBack={() => setCurrentView('MENU')} darkMode={darkMode} toggleDarkMode={toggleDarkMode} maintenanceMode={maintenanceMode} />;
-      
-      case 'PRAYER_TIME':
-        return <PrayerTimeView onBack={() => setCurrentView('MENU')} />;
-
-      case 'RECHARGE_RULES':
-        return <RechargeRulesView onBack={() => setCurrentView('MENU')} />;
-
-      case 'POLICY':
-        return <PolicyView onBack={() => setCurrentView('MENU')} />;
-
-      case 'CONTACT':
-        return <ContactView onBack={() => setCurrentView('MENU')} />;
-
-      case 'DOWNLOAD_APP':
-        return <DownloadAppView onBack={() => setCurrentView('MENU')} />;
-      case 'EMERGENCY_NOTICE_DETAIL':
-        return <EmergencyNoticeDetailView onBack={() => setCurrentView('HOME')} />;
-      case 'MENU':
-      case 'HOME':
-      default:
-        return (
+    return (
+      <Routes>
+        <Route path="/" element={
           <div className="space-y-6 pb-6">
             {/* Premium Hero Dashboard for Home */}
-            {currentView === 'HOME' && (
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl group transition-all duration-500">
-                {/* Background Image with Overlay */}
-                <div className="absolute inset-0">
-                  <img 
-                    src="https://i.imghippo.com/files/doWD3644bN.jpg" 
-                    alt="Hollan Tower Background" 
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-teal-800/60 to-emerald-900/80 backdrop-brightness-75"></div>
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group transition-all duration-500">
+              {/* Background Image with Overlay */}
+              <div className="absolute inset-0">
+                <img 
+                  src="https://i.imghippo.com/files/doWD3644bN.jpg" 
+                  alt="Hollan Tower Background" 
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-teal-800/60 to-emerald-900/80 backdrop-brightness-75"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="relative z-10 p-6 text-white">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-xl font-light opacity-90 mb-1">{greeting},</h2>
+                    <h1 className="text-2xl font-bold tracking-tight">হলান টাওয়ার বাসী</h1>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg">
+                    {timeIcon}
+                  </div>
                 </div>
-                
-                {/* Content */}
-                <div className="relative z-10 p-6 text-white">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h2 className="text-xl font-light opacity-90 mb-1">{greeting},</h2>
-                      <h1 className="text-2xl font-bold tracking-tight">হলান টাওয়ার বাসী</h1>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg">
-                      {timeIcon}
-                    </div>
-                  </div>
 
-                  <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center justify-between">
-                     <div className="flex items-center gap-3">
-                        <div className="bg-teal-500/30 p-2.5 rounded-xl">
-                           <Calendar size={20} className="text-white" />
-                        </div>
-                        <div>
-                           <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">আজকের তারিখ</p>
-                           <p className="text-sm font-bold leading-tight">{currentDate}</p>
-                        </div>
-                     </div>
-                     <div className="text-right border-l border-white/10 pl-4 flex flex-col justify-center items-end">
-                        <p className="text-2xl font-bold font-mono tracking-wider leading-none">{currentTime}</p>
-                        <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} সেকেন্ড</p>
-                        <p className="text-sm font-black opacity-100 mt-2 leading-none tracking-widest bg-white/20 px-2 py-1 rounded-md">{amPm}</p>
-                     </div>
-                  </div>
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="bg-teal-500/30 p-2.5 rounded-xl">
+                         <Calendar size={20} className="text-white" />
+                      </div>
+                      <div>
+                         <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">আজকের তারিখ</p>
+                         <p className="text-sm font-bold leading-tight">{currentDate}</p>
+                      </div>
+                   </div>
+                   <div className="text-right border-l border-white/10 pl-4 flex flex-col justify-center items-end">
+                      <p className="text-2xl font-bold font-mono tracking-wider leading-none">{currentTime}</p>
+                      <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} সেকেন্ড</p>
+                      <p className="text-sm font-black opacity-100 mt-2 leading-none tracking-widest bg-white/20 px-2 py-1 rounded-md">{amPm}</p>
+                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Grid Menu */}
             <div>
               <div className="flex justify-between items-end mb-4 px-1">
-                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                   {currentView === 'MENU' ? 'সকল সেবা' : 'সেবা কেন্দ্র'}
-                 </h3>
-                 {currentView === 'HOME' && (
-                   <button onClick={() => setCurrentView('MENU')} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
-                     সব দেখুন
-                   </button>
-                 )}
+                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">সেবা কেন্দ্র</h3>
+                 <button onClick={() => setCurrentView('MENU')} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+                   সব দেখুন
+                 </button>
               </div>
               
               <div className="grid grid-cols-3 gap-3">
-                {MENU_ITEMS.slice(0, currentView === 'HOME' ? 6 : undefined).map((item, index) => (
+                {MENU_ITEMS.slice(0, 6).map((item, index) => (
                   <motion.button
                     key={item.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -432,71 +345,194 @@ const App: React.FC = () => {
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setCurrentView(item.view);
-                    }}
+                    onClick={() => setCurrentView(item.view)}
                     className="relative bg-white dark:bg-slate-800 p-2 rounded-tl-3xl rounded-br-3xl shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)] border border-slate-100 dark:border-slate-700 overflow-hidden group text-center h-26 flex flex-col items-center justify-center gap-1 transition-all hover:shadow-primary-500/20"
                   >
                     <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${item.gradient || 'from-gray-500 to-gray-700'} flex items-center justify-center text-white shadow-sm group-hover:shadow-md transition-all duration-300`}>
                       <item.icon size={18} />
                     </div>
-                    
                     <div className="w-full px-1 mt-1">
                       <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{item.label}</h4>
                     </div>
                   </motion.button>
                 ))}
               </div>
-              {(currentView === 'HOME' || currentView === 'MENU') && (
-                <div className="mt-6">
-                  <EmergencyNoticeBox onClick={() => setCurrentView('EMERGENCY_NOTICE_DETAIL')} />
-                </div>
-              )}
+              <div className="mt-6">
+                <EmergencyNoticeBox onClick={() => setCurrentView('EMERGENCY_NOTICE_DETAIL')} />
+              </div>
             </div>
 
-            {/* Due Payment Marquee (Only Home) */}
-            {currentView === 'HOME' && (
-              <div className="px-1">
-                <DuePaymentMarquee />
-              </div>
-            )}
-
-
-            {/* Extra Menu Items (Only Menu) */}
-            {currentView === 'MENU' && (
-              <div className="space-y-3 mt-4 mb-8">
-                 {/* Maintenance Desk */}
-                 <button 
-                    onClick={() => setCurrentView('MAINTENANCE')}
-                    className="w-full relative bg-white dark:bg-slate-800 p-4 rounded-[14px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-white dark:border-slate-700 overflow-hidden flex items-center gap-4 group transition-all active:scale-[0.98]"
-                 >
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                       <Wrench size={20} />
-                    </div>
-                    <div className="text-left">
-                       <h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">মেইনটেন্যান্স ডেস্ক</h4>
-                    </div>
-                    <ChevronRight className="ml-auto text-slate-300 dark:text-slate-600" size={18} />
-                 </button>
-
-                 {/* Settings */}
-                 <button 
-                    onClick={() => setCurrentView('SETTINGS')}
-                    className="w-full relative bg-white dark:bg-slate-800 p-4 rounded-[14px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-white dark:border-slate-700 overflow-hidden flex items-center gap-4 group transition-all active:scale-[0.98]"
-                 >
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                       <Settings size={20} />
-                    </div>
-                    <div className="text-left">
-                       <h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">সেটিং</h4>
-                    </div>
-                    <ChevronRight className="ml-auto text-slate-300 dark:text-slate-600" size={18} />
-                 </button>
-              </div>
-            )}
+            {/* Due Payment Marquee */}
+            <div className="px-1">
+              <DuePaymentMarquee />
+            </div>
           </div>
-        );
-    }
+        } />
+
+        <Route path="/assistant" element={
+          <div className="space-y-6 pb-6">
+            {/* Premium Hero Dashboard for Home */}
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group transition-all duration-500">
+              {/* Background Image with Overlay */}
+              <div className="absolute inset-0">
+                <img 
+                  src="https://i.imghippo.com/files/doWD3644bN.jpg" 
+                  alt="Hollan Tower Background" 
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-900/80 via-teal-800/60 to-emerald-900/80 backdrop-brightness-75"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="relative z-10 p-6 text-white">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-xl font-light opacity-90 mb-1">{greeting},</h2>
+                    <h1 className="text-2xl font-bold tracking-tight">হলান টাওয়ার বাসী</h1>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg">
+                    {timeIcon}
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="bg-teal-500/30 p-2.5 rounded-xl">
+                         <Calendar size={20} className="text-white" />
+                      </div>
+                      <div>
+                         <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">আজকের তারিখ</p>
+                         <p className="text-sm font-bold leading-tight">{currentDate}</p>
+                      </div>
+                   </div>
+                   <div className="text-right border-l border-white/10 pl-4 flex flex-col justify-center items-end">
+                      <p className="text-2xl font-bold font-mono tracking-wider leading-none">{currentTime}</p>
+                      <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} সেকেন্ড</p>
+                      <p className="text-sm font-black opacity-100 mt-2 leading-none tracking-widest bg-white/20 px-2 py-1 rounded-md">{amPm}</p>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid Menu */}
+            <div>
+              <div className="flex justify-between items-end mb-4 px-1">
+                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">সেবা কেন্দ্র</h3>
+                 <button onClick={() => setCurrentView('MENU')} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
+                   সব দেখুন
+                 </button>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-3">
+                {MENU_ITEMS.slice(0, 6).map((item, index) => (
+                  <motion.button
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setCurrentView(item.view)}
+                    className="relative bg-white dark:bg-slate-800 p-2 rounded-tl-3xl rounded-br-3xl shadow-[0_4px_20_px_-5px_rgba(0,0,0,0.1)] border border-slate-100 dark:border-slate-700 overflow-hidden group text-center h-26 flex flex-col items-center justify-center gap-1 transition-all hover:shadow-primary-500/20"
+                  >
+                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${item.gradient || 'from-gray-500 to-gray-700'} flex items-center justify-center text-white shadow-sm group-hover:shadow-md transition-all duration-300`}>
+                      <item.icon size={18} />
+                    </div>
+                    <div className="w-full px-1 mt-1">
+                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{item.label}</h4>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+              <div className="mt-6">
+                <EmergencyNoticeBox onClick={() => setCurrentView('EMERGENCY_NOTICE_DETAIL')} />
+              </div>
+            </div>
+
+            {/* Due Payment Marquee */}
+            <div className="px-1">
+              <DuePaymentMarquee />
+            </div>
+          </div>
+        } />
+        <Route path="/menu" element={
+          <div className="space-y-6 pb-6">
+            <div>
+              <div className="mb-6">
+                <EmergencyNoticeBox onClick={() => setCurrentView('EMERGENCY_NOTICE_DETAIL')} />
+              </div>
+              
+              <div className="flex justify-between items-end mb-4 px-1">
+                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">সকল সেবা</h3>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-3">
+                {MENU_ITEMS.map((item, index) => (
+                  <motion.button
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setCurrentView(item.view)}
+                    className="relative bg-white dark:bg-slate-800 p-2 rounded-tl-3xl rounded-br-3xl shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)] border border-slate-100 dark:border-slate-700 overflow-hidden group text-center h-26 flex flex-col items-center justify-center gap-1 transition-all hover:shadow-primary-500/20"
+                  >
+                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${item.gradient || 'from-gray-500 to-gray-700'} flex items-center justify-center text-white shadow-sm group-hover:shadow-md transition-all duration-300`}>
+                      <item.icon size={18} />
+                    </div>
+                    <div className="w-full px-1 mt-1">
+                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{item.label}</h4>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3 mt-4 mb-8">
+               <button onClick={() => setCurrentView('MAINTENANCE')} className="w-full relative bg-white dark:bg-slate-800 p-4 rounded-[14px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-white dark:border-slate-700 overflow-hidden flex items-center gap-4 group transition-all active:scale-[0.98]">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                     <Wrench size={20} />
+                  </div>
+                  <div className="text-left"><h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">মেইনটেন্যান্স ডেস্ক</h4></div>
+                  <ChevronRight className="ml-auto text-slate-300 dark:text-slate-600" size={18} />
+               </button>
+
+               <button onClick={() => setCurrentView('SETTINGS')} className="w-full relative bg-white dark:bg-slate-800 p-4 rounded-[14px] shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-white dark:border-slate-700 overflow-hidden flex items-center gap-4 group transition-all active:scale-[0.98]">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                     <Settings size={20} />
+                  </div>
+                  <div className="text-left"><h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">সেটিং</h4></div>
+                  <ChevronRight className="ml-auto text-slate-300 dark:text-slate-600" size={18} />
+               </button>
+            </div>
+          </div>
+        } />
+
+        <Route path="/service-charge" element={<ServiceChargeView selectedUnit={selectedUnit} onUnitSelect={setSelectedUnit} showSummaryList={showSummaryList} onSummaryToggle={setShowSummaryList} />} />
+        <Route path="/desco" element={<DescoView setView={setCurrentView} />} />
+        <Route path="/desco-info" element={<DescoInfoView onBack={() => setCurrentView('DESCO')} />} />
+        <Route path="/desco-rules" element={<DescoRulesView onBack={() => setCurrentView('DESCO')} />} />
+        <Route path="/accounts" element={<AccountsView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
+        <Route path="/map-routes" element={<MapRoutesView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/to-let" element={<ToLetView />} />
+        <Route path="/emergency" element={<EmergencyView />} />
+        <Route path="/water-bill" element={<WaterBillView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/lift-instructions" element={<LiftInstructionsView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/maintenance" element={<MaintenanceView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
+        <Route path="/settings" element={<SettingsView onBack={() => setCurrentView('MENU')} darkMode={darkMode} toggleDarkMode={toggleDarkMode} maintenanceMode={maintenanceMode} />} />
+        <Route path="/prayer-time" element={<PrayerTimeView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/recharge-rules" element={<RechargeRulesView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/policy" element={<PolicyView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/contact" element={<ContactView onBack={() => setCurrentView('MENU')} setView={setCurrentView} />} />
+        <Route path="/download-app" element={<DownloadAppView onBack={() => setCurrentView('MENU')} />} />
+        <Route path="/emergency-notice" element={<EmergencyNoticeDetailView onBack={() => setCurrentView('HOME')} />} />
+        
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
   };
 
   const hasNotice = (currentView === 'HOME' || currentView === 'MENU' || currentView === 'DESCO' || currentView === 'SERVICE_CHARGE' || currentView === 'EMERGENCY');
@@ -604,14 +640,25 @@ const App: React.FC = () => {
       )}
     </div>
 
-    {/* Gemini Assistant - Only visible on HOME view */}
-    <Assistant isVisible={currentView === 'HOME'} isOpen={isAssistantOpen} onOpenChange={setIsAssistantOpen} />
+    {/* Gemini Assistant - Only visible on HOME or ASSISTANT view */}
+    <Assistant 
+      isVisible={currentView === 'HOME' || currentView === 'AI_ASSISTANT'} 
+      isOpen={isAssistantOpen} 
+      onOpenChange={(open) => {
+        setIsAssistantOpen(open);
+        if (open) {
+          setCurrentView('AI_ASSISTANT');
+        } else if (currentView === 'AI_ASSISTANT') {
+          setCurrentView('HOME');
+        }
+      }} 
+    />
 
     {/* Maintenance Popup */}
     <MaintenancePopup enabled={maintenanceMode} />
 
     {/* Bottom Navigation */}
-    <BottomNav currentView={currentView} setView={setCurrentView} />
+    <BottomNav currentView={currentView} />
     </>
   );
 };

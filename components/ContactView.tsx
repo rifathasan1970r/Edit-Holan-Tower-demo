@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Phone, MessageCircle, ShieldCheck, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ServiceLayout } from './ServiceLayout';
 
 interface ContactViewProps {
   onBack: () => void;
@@ -60,7 +59,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => 
   };
 
   return (
-    <ServiceLayout setView={setView}>
+    <>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button 
@@ -154,6 +153,6 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => 
           জরুরী পরিস্থিতিতে সরাসরি কল করাই শ্রেয়।
         </p>
       </div>
-    </ServiceLayout>
+    </>
   );
 };

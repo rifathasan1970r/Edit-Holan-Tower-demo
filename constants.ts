@@ -104,6 +104,15 @@ export const MENU_ITEMS: MenuItem[] = [
     gradient: 'from-red-500 to-rose-700'
   },
   { 
+    id: 'emergency_notice', 
+    label: 'জরুরী নোটিশ', 
+    icon: Megaphone, 
+    view: 'EMERGENCY_NOTICE_DETAIL',
+    color: 'bg-red-500',
+    description: 'গুরুত্বপূর্ণ ঘোষণা',
+    gradient: 'from-red-600 to-rose-500'
+  },
+  { 
     id: 'water', 
     label: 'পানির বিল', 
     icon: Droplets, 

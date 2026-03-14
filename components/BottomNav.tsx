@@ -1,11 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BOTTOM_NAV_ITEMS } from '../constants';
 import { ViewState } from '../types';
 
 interface BottomNavProps {
   currentView: ViewState;
-  setView: (view: ViewState) => void;
 }
 
 type NavItem = typeof BOTTOM_NAV_ITEMS[number];
@@ -13,15 +13,15 @@ type NavItem = typeof BOTTOM_NAV_ITEMS[number];
 interface NavButtonProps {
   item: NavItem;
   isActive: boolean;
-  onNavigate: (view: ViewState) => void;
 }
 
-const NavButton = React.memo(({ item, isActive, onNavigate }: NavButtonProps) => {
+const NavButton = React.memo(({ item, isActive }: NavButtonProps) => {
+  const navigate = useNavigate();
   const isHome = item.id === 'home';
 
   return (
     <button
-      onClick={() => onNavigate(item.view)}
+      onClick={() => navigate(item.view === 'HOME' ? '/' : `/${item.view.toLowerCase().replace(/_/g, '-')}`)}
       className="relative flex flex-col items-center justify-end w-16 h-full group outline-none"
     >
       {isHome ? (
@@ -104,7 +104,7 @@ const NavButton = React.memo(({ item, isActive, onNavigate }: NavButtonProps) =>
   );
 });
 
-const BottomNav: React.FC<BottomNavProps> = React.memo(({ currentView, setView }) => {
+const BottomNav: React.FC<BottomNavProps> = React.memo(({ currentView }) => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 pb-0 pointer-events-none">
       <div className="max-w-md mx-auto relative pointer-events-auto">
@@ -120,7 +120,6 @@ const BottomNav: React.FC<BottomNavProps> = React.memo(({ currentView, setView }
             key={item.id}
             item={item}
             isActive={currentView === item.view}
-            onNavigate={setView}
           />
         ))}
       </div>

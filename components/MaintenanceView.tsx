@@ -1,6 +1,5 @@
 import React from 'react';
 import { ArrowLeft, Wrench } from 'lucide-react';
-import { ServiceLayout } from './ServiceLayout';
 
 interface MaintenanceViewProps {
   onBack: () => void;
@@ -9,7 +8,7 @@ interface MaintenanceViewProps {
 
 export const MaintenanceView: React.FC<MaintenanceViewProps> = ({ onBack, setView }) => {
   return (
-    <ServiceLayout setView={setView}>
+    <>
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-20 h-20 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded-full flex items-center justify-center mb-6 animate-pulse">
           <Wrench size={40} />
@@ -24,6 +23,6 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({ onBack, setVie
           ফিরে যান
         </button>
       </div>
-    </ServiceLayout>
+    </>
   );
 };

@@ -4,7 +4,6 @@ import { Search, Zap, Filter, Check, Copy, Hash, ExternalLink, ShieldCheck, Ligh
 import { motion, AnimatePresence } from 'framer-motion';
 import { ViewState } from '../types';
 import { FLAT_OWNERS as DESCO_DATA } from '../constants';
-import { ServiceLayout } from './ServiceLayout';
 
 // Constants
 const EKPAY_LINK = "https://ekpay.gov.bd/#/payment/electricity-bill";
@@ -256,7 +255,7 @@ export const DescoView: React.FC<DescoViewProps> = ({ lang = 'bn', setView }) =>
   };
 
   return (
-    <ServiceLayout setView={setView}>
+    <>
       
       {/* Background Decor */}
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-indigo-100/40 via-white to-slate-50 dark:from-indigo-900/20 dark:via-slate-900 dark:to-slate-900 pointer-events-none" />
@@ -284,7 +283,6 @@ export const DescoView: React.FC<DescoViewProps> = ({ lang = 'bn', setView }) =>
         <div className="grid grid-cols-2 gap-3 mb-4">
             <button 
                 onClick={() => {
-                    window.history.pushState({ view: 'DESCO_INFO', unit: null, summary: false }, '');
                     setView('DESCO_INFO');
                 }}
                 className="bg-gradient-to-br from-red-500 to-rose-600 border border-red-400 rounded-2xl p-3 shadow-md hover:shadow-lg transition-all text-left flex flex-col items-start justify-center gap-1 h-20 group active:scale-95 relative overflow-hidden"
@@ -657,6 +655,6 @@ export const DescoView: React.FC<DescoViewProps> = ({ lang = 'bn', setView }) =>
         document.body
       )}
 
-    </ServiceLayout>
+    </>
   );
 };
