@@ -36,8 +36,8 @@ service cloud.firestore {
     }
 
     match /notices/{noticeId} {
-      // Allow any authenticated user to read notices
-      allow read: if isAuthenticated();
+      // Allow ANYONE to read notices (Public access)
+      allow read: if true;
       
       // Only admin can create, update, or delete
       allow create: if isAdmin() && isValidNotice(request.resource.data);
