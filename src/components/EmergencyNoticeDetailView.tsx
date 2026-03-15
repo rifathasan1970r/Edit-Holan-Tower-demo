@@ -271,14 +271,14 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
           </div>
           
           <div className="w-full bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl p-4 text-center my-1">
-            <h4 className="text-[17px] font-bold text-rose-600 dark:text-rose-400 mb-1">আপনার গুরুত্বপূর্ণ নোটিশ।</h4>
+            <h4 className="text-[17px] font-bold text-rose-600 dark:text-rose-400 mb-1">আপনার গুরুত্বপূর্ণ নোটিশ</h4>
             <p className="text-[14px] font-medium text-rose-500/80 dark:text-rose-400/80 m-0">সকলকে মেনে চলার জন্য অনুরোধ করা হচ্ছে</p>
           </div>
 
           {previewNotice.description && (
             <div className="w-full bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
               <div className="text-slate-800 dark:text-slate-200 font-normal text-[15px] leading-loose text-left m-0 whitespace-pre-wrap tracking-wide">
-                {previewNotice.description.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                {previewNotice.description.split(/(\*\*[\s\S]*?\*\*)/g).map((part, i) => {
                   if (part.startsWith('**') && part.endsWith('**')) {
                     return <strong key={i} className="font-bold text-black dark:text-white">{part.slice(2, -2)}</strong>;
                   }
@@ -449,6 +449,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                       <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">পিডিএফ এর নিচের লেখা (ঐচ্ছিক)</label>
                       <button 
                         type="button"
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={handleBoldClick}
                         className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
                         title="বোল্ড করুন"
