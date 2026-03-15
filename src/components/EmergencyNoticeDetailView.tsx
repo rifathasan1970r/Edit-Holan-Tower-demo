@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
 
 interface Notice {
   id: string;
@@ -270,17 +269,21 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
               allow="autoplay"
             />
           </div>
+          
+          <div className="w-full bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl p-4 text-center my-1">
+            <h4 className="text-[17px] font-bold text-rose-600 dark:text-rose-400 mb-1">আপনার গুরুত্বপূর্ণ নোটিশ।</h4>
+            <p className="text-[14px] font-medium text-rose-500/80 dark:text-rose-400/80 m-0">সকলকে মেনে চলার জন্য অনুরোধ করা হচ্ছে</p>
+          </div>
+
           {previewNotice.description && (
             <div className="w-full bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
               <div className="text-slate-800 dark:text-slate-200 font-normal text-[15px] leading-loose text-left m-0 whitespace-pre-wrap tracking-wide">
-                <ReactMarkdown 
-                  components={{
-                    p: ({node, ...props}) => <p className="m-0" {...props} />,
-                    strong: ({node, ...props}) => <strong className="font-bold text-black dark:text-white" {...props} />
-                  }}
-                >
-                  {previewNotice.description}
-                </ReactMarkdown>
+                {previewNotice.description.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={i} className="font-bold text-black dark:text-white">{part.slice(2, -2)}</strong>;
+                  }
+                  return <span key={i}>{part}</span>;
+                })}
               </div>
             </div>
           )}
