@@ -12,7 +12,8 @@ import {
   X,
   Send,
   LogOut as LogOutIcon,
-  Bold
+  Bold,
+  Pin
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -549,7 +550,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                       className="p-2 rounded-xl transition-all shadow-sm bg-amber-500 hover:bg-amber-600 text-white"
                       title="আনপিন করুন"
                     >
-                      <AlertTriangle size={16} />
+                      <Pin size={16} />
                     </button>
                     <button 
                       onClick={(e) => {
@@ -607,7 +608,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                         className={`p-2 rounded-xl transition-all shadow-sm ${notice.isPinned ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-white/20 hover:bg-white/30 text-white'}`}
                         title={notice.isPinned ? "আনপিন করুন" : "পিন করুন"}
                       >
-                        <AlertTriangle size={16} />
+                        <Pin size={16} />
                       </button>
                       <button 
                         onClick={(e) => {
