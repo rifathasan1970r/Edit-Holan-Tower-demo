@@ -631,7 +631,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       {/* Footer Info */}
       <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 text-center">
         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
-          হলান টাওয়ার ম্যানেজমেন্ট সিস্টেম
+          উপরোক্ত সকল নোটিশসমূহ হলান টাওয়ার কর্তৃপক্ষের নির্দেশক্রমে প্রকাশ করা হলো।
         </p>
       </div>
 
