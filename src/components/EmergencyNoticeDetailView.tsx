@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ChevronLeft, 
   AlertTriangle, 
@@ -11,10 +11,12 @@ import {
   Trash2,
   X,
   Send,
-  LogOut as LogOutIcon
+  LogOut as LogOutIcon,
+  Bold
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 interface Notice {
   id: string;
@@ -22,17 +24,34 @@ interface Notice {
   date: string;
   driveLink: string;
   createdAt: number;
+  isPinned?: boolean;
+  description?: string;
 }
 
 interface EmergencyNoticeDetailViewProps {
   onBack: () => void;
 }
 
+const BENGALI_MONTHS = [
+  'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 
+  'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+];
+
+const BENGALI_NUMBERS: { [key: string]: string } = {
+  '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+  '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+};
+
+const toBengaliNumber = (num: string | number) => {
+  return num.toString().split('').map(char => BENGALI_NUMBERS[char] || char).join('');
+};
+
 export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps> = ({ onBack }) => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [previewNotice, setPreviewNotice] = useState<Notice | null>(null);
+  const [noticeToDelete, setNoticeToDelete] = useState<string | null>(null);
   
   const [notices, setNotices] = useState<Notice[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -40,9 +59,31 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
 
   // Form states
   const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
+  const [description, setDescription] = useState('');
   const [driveLink, setDriveLink] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Date states
+  const today = new Date();
+  const [day, setDay] = useState(today.getDate().toString());
+  const [month, setMonth] = useState(BENGALI_MONTHS[today.getMonth()]);
+  const [year, setYear] = useState(today.getFullYear().toString());
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleBoldClick = () => {
+    if (!textareaRef.current) return;
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const selectedText = description.substring(start, end);
+    const newText = description.substring(0, start) + `**${selectedText || 'বোল্ড লেখা'}**` + description.substring(end);
+    setDescription(newText);
+    
+    setTimeout(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(start + 2, end + 2 + (selectedText ? 0 : 9));
+    }, 0);
+  };
 
   const fetchNotices = async () => {
     setLoading(true);
@@ -55,8 +96,12 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
         
       if (data && data.value) {
         const parsedNotices = JSON.parse(data.value);
-        // Sort by createdAt descending
-        parsedNotices.sort((a: Notice, b: Notice) => b.createdAt - a.createdAt);
+        // Sort by pinned first, then createdAt descending
+        parsedNotices.sort((a: Notice, b: Notice) => {
+          if (a.isPinned && !b.isPinned) return -1;
+          if (!a.isPinned && b.isPinned) return 1;
+          return b.createdAt - a.createdAt;
+        });
         setNotices(parsedNotices);
       } else {
         setNotices([]);
@@ -71,6 +116,29 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
   useEffect(() => {
     fetchNotices();
   }, []);
+
+  const handleTogglePin = async (id: string) => {
+    try {
+      const newNotices = notices.map(n => 
+        n.id === id ? { ...n, isPinned: !n.isPinned } : n
+      );
+      // Re-sort
+      newNotices.sort((a: Notice, b: Notice) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        return b.createdAt - a.createdAt;
+      });
+
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'emergency_notices', value: JSON.stringify(newNotices) }, { onConflict: 'key' });
+        
+      if (error) throw error;
+      setNotices(newNotices);
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+    }
+  };
 
   const handleLockClick = () => {
     if (isAdminMode) {
@@ -103,16 +171,20 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
 
   const handleAddNotice = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !date || !driveLink) return;
+    if (!title || !day || !month || !year || !driveLink) return;
 
     setIsSubmitting(true);
     try {
+      const formattedDate = `${toBengaliNumber(day)} ${month} ${toBengaliNumber(year)}`;
+      
       const newNotice: Notice = {
         id: Date.now().toString(),
         title,
-        date,
+        date: formattedDate,
         driveLink,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        isPinned: false,
+        description: description.trim() || undefined
       };
       
       const newNotices = [newNotice, ...notices];
@@ -125,30 +197,33 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       
       setNotices(newNotices);
       setTitle('');
-      setDate('');
+      setDescription('');
+      setDay(today.getDate().toString());
+      setMonth(BENGALI_MONTHS[today.getMonth()]);
+      setYear(today.getFullYear().toString());
       setDriveLink('');
       setShowAddForm(false);
     } catch (error) {
       console.error("Error adding notice:", error);
-      alert("নোটিশ যোগ করতে সমস্যা হয়েছে।");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteNotice = async (id: string) => {
-    if (window.confirm('আপনি কি নিশ্চিত যে এই নোটিশটি ডিলিট করতে চান?')) {
-      try {
-        const newNotices = notices.filter(n => n.id !== id);
-        const { error } = await supabase
-          .from('app_settings')
-          .upsert({ key: 'emergency_notices', value: JSON.stringify(newNotices) }, { onConflict: 'key' });
-          
-        if (error) throw error;
-        setNotices(newNotices);
-      } catch (error) {
-        console.error("Error deleting notice:", error);
-      }
+  const confirmDelete = async () => {
+    if (!noticeToDelete) return;
+    try {
+      const newNotices = notices.filter(n => n.id !== noticeToDelete);
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'emergency_notices', value: JSON.stringify(newNotices) }, { onConflict: 'key' });
+        
+      if (error) throw error;
+      setNotices(newNotices);
+    } catch (error) {
+      console.error("Error deleting notice:", error);
+    } finally {
+      setNoticeToDelete(null);
     }
   };
 
@@ -183,10 +258,10 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
         </div>
 
         {/* PDF Preview Container */}
-        <div className="flex-1 w-full flex flex-col items-center justify-start">
+        <div className="flex-1 w-full flex flex-col items-center justify-start gap-4">
           <div 
-            className="w-full bg-white shadow-sm overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl" 
-            style={{ aspectRatio: '1 / 1.414', maxHeight: '75vh' }}
+            className="w-full bg-white shadow-sm overflow-hidden border border-slate-200 dark:border-slate-700 rounded-xl shrink-0" 
+            style={{ aspectRatio: '1 / 1.414', maxHeight: '60vh' }}
           >
             <iframe 
               src={getPreviewLink(previewNotice.driveLink)} 
@@ -195,6 +270,20 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
               allow="autoplay"
             />
           </div>
+          {previewNotice.description && (
+            <div className="w-full bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+              <div className="text-slate-800 dark:text-slate-200 font-normal text-[15px] leading-loose text-left m-0 whitespace-pre-wrap tracking-wide">
+                <ReactMarkdown 
+                  components={{
+                    p: ({node, ...props}) => <p className="m-0" {...props} />,
+                    strong: ({node, ...props}) => <strong className="font-bold text-black dark:text-white" {...props} />
+                  }}
+                >
+                  {previewNotice.description}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -323,13 +412,53 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">তারিখ</label>
-                    <input 
-                      type="text" 
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      placeholder="উদা: ১৪ মার্চ ২০২৬"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
-                      required
+                    <div className="flex gap-2">
+                      <select 
+                        value={day}
+                        onChange={(e) => setDay(e.target.value)}
+                        className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      >
+                        {Array.from({ length: 31 }, (_, i) => (
+                          <option key={i + 1} value={(i + 1).toString()}>{toBengaliNumber(i + 1)}</option>
+                        ))}
+                      </select>
+                      <select 
+                        value={month}
+                        onChange={(e) => setMonth(e.target.value)}
+                        className="flex-[1.5] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      >
+                        {BENGALI_MONTHS.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                      <select 
+                        value={year}
+                        onChange={(e) => setYear(e.target.value)}
+                        className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                      >
+                        <option value={today.getFullYear().toString()}>{toBengaliNumber(today.getFullYear())}</option>
+                        <option value={(today.getFullYear() + 1).toString()}>{toBengaliNumber(today.getFullYear() + 1)}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">পিডিএফ এর নিচের লেখা (ঐচ্ছিক)</label>
+                      <button 
+                        type="button"
+                        onClick={handleBoldClick}
+                        className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
+                        title="বোল্ড করুন"
+                      >
+                        <Bold size={14} />
+                      </button>
+                    </div>
+                    <textarea 
+                      ref={textareaRef}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="পিডিএফ এর নিচে দেখাবে... (বোল্ড করতে লেখা সিলেক্ট করে B বাটনে ক্লিক করুন)"
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all min-h-[100px] resize-none"
                     />
                   </div>
                   <div>
@@ -364,15 +493,15 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       </AnimatePresence>
 
       {/* Notices List */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 px-1">
-          <AlertTriangle size={18} className="text-amber-500" />
-          <h3 className="font-bold text-slate-700 dark:text-slate-200">সাম্প্রতিক নোটিশসমূহ</h3>
+      <div className="max-w-[420px] mx-auto font-['Hind_Siliguri',sans-serif]">
+        <div className="flex items-center justify-center gap-2.5 my-2.5 mb-5">
+          <div className="w-1 h-7 bg-[#e63946] rounded-[3px]"></div>
+          <h1 className="text-[26px] font-bold text-[#111827] dark:text-white m-0">নোটিশবোর্ড</h1>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-[#1f6fa7] border-t-transparent rounded-full animate-spin"></div>
             <p className="text-sm font-medium text-slate-500">লোড হচ্ছে...</p>
           </div>
         ) : notices.length === 0 ? (
@@ -381,57 +510,116 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
             <p className="text-slate-500 dark:text-slate-400 font-medium">কোনো নোটিশ পাওয়া যায়নি</p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {notices.map((notice, index) => (
+          <div className="flex flex-col">
+            {/* Pinned Notices Section */}
+            {notices.filter(n => n.isPinned).map((notice, index) => (
               <motion.div
-                key={notice.id}
+                key={`pinned-${notice.id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => setPreviewNotice(notice)}
-                className="group relative bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-xl border border-slate-100 dark:border-slate-700 hover:border-primary-200 dark:hover:border-primary-800 transition-all duration-300 cursor-pointer overflow-hidden"
+                className="bg-[#1f6fa7] rounded-[14px] p-4 text-white mb-4 flex gap-2.5 items-start cursor-pointer transition-transform active:scale-[0.98] relative pt-8 border-2 border-[#e63946]"
               >
-                {/* Subtle background gradient on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-transparent dark:from-primary-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-br from-[#6a11cb] to-[#2575fc] text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">
+                  📌 পিন করা নোটিশ
+                </div>
                 
-                <div className="relative flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 flex items-center justify-center shrink-0 mt-0.5 shadow-inner">
-                    <FileText size={24} />
+                <div className="bg-white text-[#1f6fa7] px-2 py-1.5 rounded-[10px] font-semibold text-sm min-w-[82px] text-center self-center shrink-0">
+                  {notice.date}
+                </div>
+                
+                <div className="flex-[1.3] min-w-0 self-center">
+                  <p className="text-[15px] leading-relaxed font-semibold m-0 hover:underline">
+                    {notice.title}
+                  </p>
+                </div>
+
+                {isAdminMode && (
+                  <div className="flex flex-col items-end gap-2 shrink-0 ml-2 z-10">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTogglePin(notice.id);
+                      }}
+                      className="p-2 rounded-xl transition-all shadow-sm bg-amber-500 hover:bg-amber-600 text-white"
+                      title="আনপিন করুন"
+                    >
+                      <AlertTriangle size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setNoticeToDelete(notice.id);
+                      }}
+                      className="p-2 rounded-xl bg-rose-500/80 hover:bg-rose-600 text-white transition-all shadow-sm"
+                      title="ডিলিট"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            ))}
+
+            {/* All Notices Section */}
+            {[...notices].sort((a, b) => b.createdAt - a.createdAt).map((notice, index) => {
+              const isFirst = index === 0;
+              
+              return (
+                <motion.div
+                  key={`all-${notice.id}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setPreviewNotice(notice)}
+                  className={`bg-[#1f6fa7] rounded-[14px] p-4 text-white mb-4 flex gap-2.5 items-start cursor-pointer transition-transform active:scale-[0.98] ${
+                    isFirst ? 'relative pt-8' : ''
+                  }`}
+                >
+                  {isFirst && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-br from-[#6a11cb] to-[#2575fc] text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">
+                      সকল নোটিশ
+                    </div>
+                  )}
+                  
+                  <div className="bg-white text-[#1f6fa7] px-2 py-1.5 rounded-[10px] font-semibold text-sm min-w-[82px] text-center self-center shrink-0">
+                    {notice.date}
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-800 dark:text-white text-base leading-snug mb-2 line-clamp-2 pr-2">
+                  <div className="flex-[1.3] min-w-0 self-center">
+                    <p className="text-[15px] leading-relaxed font-semibold m-0 hover:underline">
                       {notice.title}
-                    </h4>
-                    <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400">
-                      <span className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1 rounded-lg">
-                        <CalendarIcon size={14} className="text-primary-500" />
-                        {notice.date}
-                      </span>
-                    </div>
+                    </p>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2 shrink-0 z-10">
-                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-400 group-hover:bg-primary-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                      <ExternalLink size={18} />
-                    </div>
-                    
-                    {isAdminMode && (
+                  {isAdminMode && (
+                    <div className="flex flex-col items-end gap-2 shrink-0 ml-2 z-10">
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteNotice(notice.id);
+                          handleTogglePin(notice.id);
                         }}
-                        className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 hover:bg-rose-600 hover:text-white transition-all duration-300 shadow-sm"
+                        className={`p-2 rounded-xl transition-all shadow-sm ${notice.isPinned ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-white/20 hover:bg-white/30 text-white'}`}
+                        title={notice.isPinned ? "আনপিন করুন" : "পিন করুন"}
+                      >
+                        <AlertTriangle size={16} />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNoticeToDelete(notice.id);
+                        }}
+                        className="p-2 rounded-xl bg-rose-500/80 hover:bg-rose-600 text-white transition-all shadow-sm"
                         title="ডিলিট"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -442,6 +630,47 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
           হলান টাওয়ার ম্যানেজমেন্ট সিস্টেম
         </p>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {noticeToDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-700 text-center"
+            >
+              <div className="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">নোটিশ ডিলিট</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6">
+                আপনি কি নিশ্চিত যে এই নোটিশটি ডিলিট করতে চান? এটি আর ফিরে পাওয়া যাবে না।
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setNoticeToDelete(null)}
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  বাতিল
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold hover:bg-rose-600 transition-colors"
+                >
+                  ডিলিট করুন
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
