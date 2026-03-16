@@ -13,7 +13,8 @@ import {
   Send,
   LogOut as LogOutIcon,
   Bold,
-  Pin
+  Pin,
+  Edit
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -52,6 +53,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
   const [pinInput, setPinInput] = useState('');
   const [previewNotice, setPreviewNotice] = useState<Notice | null>(null);
   const [noticeToDelete, setNoticeToDelete] = useState<string | null>(null);
+  const [noticeToEdit, setNoticeToEdit] = useState<any | null>(null);
   
   const [notices, setNotices] = useState<Notice[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -224,6 +226,23 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       console.error("Error deleting notice:", error);
     } finally {
       setNoticeToDelete(null);
+    }
+  };
+
+  const confirmEdit = async () => {
+    if (!noticeToEdit) return;
+    try {
+      const newNotices = notices.map(n => n.id === noticeToEdit.id ? noticeToEdit : n);
+      const { error } = await supabase
+        .from('app_settings')
+        .upsert({ key: 'emergency_notices', value: JSON.stringify(newNotices) }, { onConflict: 'key' });
+        
+      if (error) throw error;
+      setNotices(newNotices);
+    } catch (error) {
+      console.error("Error editing notice:", error);
+    } finally {
+      setNoticeToEdit(null);
     }
   };
 
@@ -545,6 +564,16 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
+                        setNoticeToEdit(notice);
+                      }}
+                      className="p-2 rounded-xl transition-all shadow-sm bg-blue-500 hover:bg-blue-600 text-white"
+                      title="এডিট"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
                         handleTogglePin(notice.id);
                       }}
                       className="p-2 rounded-xl transition-all shadow-sm bg-amber-500 hover:bg-amber-600 text-white"
@@ -600,6 +629,16 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
 
                   {isAdminMode && (
                     <div className="flex flex-col items-end gap-2 shrink-0 ml-2 z-10">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNoticeToEdit(notice);
+                        }}
+                        className="p-2 rounded-xl transition-all shadow-sm bg-blue-500 hover:bg-blue-600 text-white"
+                        title="এডিট"
+                      >
+                        <Edit size={16} />
+                      </button>
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -670,6 +709,111 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   className="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold hover:bg-rose-600 transition-colors"
                 >
                   ডিলিট করুন
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {noticeToEdit && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-700"
+            >
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">নোটিশ এডিট</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">নোটিশের নাম</label>
+                  <input
+                    type="text"
+                    value={noticeToEdit.title}
+                    onChange={(e) => setNoticeToEdit({...noticeToEdit, title: e.target.value})}
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
+                    placeholder="টাইটেল"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">তারিখ</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={noticeToEdit.date}
+                      onChange={(e) => setNoticeToEdit({...noticeToEdit, date: e.target.value})}
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
+                      placeholder="তারিখ (উদা: ১ জানুয়ারি)"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">পিডিএফ লিংক</label>
+                  <input
+                    type="url"
+                    value={noticeToEdit.driveLink}
+                    onChange={(e) => setNoticeToEdit({...noticeToEdit, driveLink: e.target.value})}
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
+                    placeholder="পিডিএফ লিংক"
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">বিস্তারিত লেখা</label>
+                    <button 
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const textarea = document.getElementById('edit-textarea') as HTMLTextAreaElement;
+                        if (!textarea) return;
+                        const start = textarea.selectionStart;
+                        const end = textarea.selectionEnd;
+                        const text = textarea.value;
+                        const selected = text.substring(start, end);
+                        const before = text.substring(0, start);
+                        const after = text.substring(end);
+                        setNoticeToEdit({...noticeToEdit, description: before + `**${selected}**` + after});
+                        setTimeout(() => {
+                          textarea.focus();
+                          textarea.setSelectionRange(start + 2, end + 2);
+                        }, 0);
+                      }}
+                      className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
+                      title="বোল্ড করুন"
+                    >
+                      <Bold size={14} />
+                    </button>
+                  </div>
+                  <textarea
+                    id="edit-textarea"
+                    value={noticeToEdit.description}
+                    onChange={(e) => setNoticeToEdit({...noticeToEdit, description: e.target.value})}
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
+                    placeholder="বিস্তারিত লিখুন"
+                    rows={4}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setNoticeToEdit(null)}
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  বাতিল
+                </button>
+                <button
+                  onClick={confirmEdit}
+                  className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors"
+                >
+                  সেভ করুন
                 </button>
               </div>
             </motion.div>
