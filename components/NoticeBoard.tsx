@@ -1,14 +1,14 @@
 import React from 'react';
 import { Megaphone } from 'lucide-react';
-import { NOTICES, TRANSLATIONS } from '../constants';
+import { NOTICES } from '../constants';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface NoticeBoardProps {
-  lang?: 'bn' | 'en';
   text?: string;
 }
 
-const NoticeBoard: React.FC<NoticeBoardProps> = ({ lang = 'bn', text }) => {
-  const t = TRANSLATIONS[lang];
+const NoticeBoard: React.FC<NoticeBoardProps> = ({ text }) => {
+  const { t } = useLanguage();
 
   return (
     <div className="bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 py-2 relative overflow-hidden flex items-center shadow-sm h-10 transition-colors duration-300">
@@ -31,18 +31,22 @@ const NoticeBoard: React.FC<NoticeBoardProps> = ({ lang = 'bn', text }) => {
           ) : (
             <>
               <div className="flex items-center">
-                {NOTICES.map((n) => (
+                {NOTICES.map((n, index) => (
                   <div key={n.id} className="flex items-center mx-6">
                     {n.icon && <n.icon className="w-4 h-4 text-purple-600 dark:text-purple-400 mr-2 shrink-0" />}
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{n.text}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {t.notices[index] || n.text}
+                    </span>
                   </div>
                 ))}
               </div>
               <div className="flex items-center">
-                {NOTICES.map((n) => (
+                {NOTICES.map((n, index) => (
                   <div key={`dup-${n.id}`} className="flex items-center mx-6">
                     {n.icon && <n.icon className="w-4 h-4 text-purple-600 dark:text-purple-400 mr-2 shrink-0" />}
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{n.text}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {t.notices[index] || n.text}
+                    </span>
                   </div>
                 ))}
               </div>

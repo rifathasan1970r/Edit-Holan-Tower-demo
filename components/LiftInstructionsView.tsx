@@ -3,26 +3,14 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft, ArrowUpDown, Phone, Users, Weight, DoorOpen, Ban, Wind, Bell, PowerOff, ChevronsUpDown, Hand, UserCheck, Trash2, VolumeX, Building
 } from 'lucide-react';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface LiftInstructionsViewProps {
   onBack: () => void;
 }
 
-const instructions = [
-  { icon: Building, text: "হলান টাওয়ার লিফটে আপনাকে স্বাগতম।" },
-  { icon: Users, text: "অনুগ্রহপূর্বক লাইনে দাঁড়ান এবং ধৈর্য ধরুন।" },
-  { icon: ChevronsUpDown, text: "উপরে বা নিচে নামার জন্য নির্ধারিত বাটন চাপুন।" },
-  { icon: Hand, text: "বাটন চাপার পর আলো জ্বলা পর্যন্ত অপেক্ষা করুন।" },
-  { icon: DoorOpen, text: "লিফটের দরজা সম্পূর্ণ খোলার পর প্রবেশ করুন।" },
-  { icon: UserCheck, text: "আপনার কাঙ্ক্ষিত ফ্লোরের বাটন একবার চাপুন।" },
-  { icon: Weight, text: "ধারন ক্ষমতার অতিরিক্ত ওজন বহন থেকে বিরত থাকুন। (সর্বোচ্চ ৮ জন বা ৬৩০ কেজি)" },
-  { icon: VolumeX, text: "অতিরিক্ত ওজনের সংকেত বাজলে সর্বশেষ আরোহনকারী নেমে পড়ুন।" },
-  { icon: Ban, text: "লিফটের ভিতরে ধুমপান করা সম্পূর্ণ নিষিদ্ধ।" },
-  { icon: Users, text: "শিশু ও বৃদ্ধদের একা একা লিফটে ভ্রমণ করতে নিরুৎসাহিত করা হচ্ছে।" },
-  { icon: Trash2, text: "লিফটে সকল প্রকার ময়লা আবর্জনা ফেলা থেকে বিরত থাকুন।" },
-  { icon: PowerOff, text: "বিদ্যুৎ চলে গেলে আতঙ্কিত হবেন না, অটো রেস্কিউ ডিভাইস আপনাকে নিকটস্থ ফ্লোরে নিয়ে যাবে।" },
-  { icon: Bell, text: "যান্ত্রিক ত্রুটিতে লিফটের ভিতরের কলিং বেল চাপুন এবং কর্তৃপক্ষের সাহায্য নিন।" },
-  { icon: Wind, text: "লিফটের ভিতরে পর্যাপ্ত বায়ু চলাচল ও ইমারজেন্সি লাইটের ব্যবস্থা রয়েছে।" },
+const instructionIcons = [
+  Building, Users, ChevronsUpDown, Hand, DoorOpen, UserCheck, Weight, VolumeX, Ban, Users, Trash2, PowerOff, Bell, Wind
 ];
 
 const containerVariants = {
@@ -45,6 +33,13 @@ const itemVariants = {
 };
 
 export const LiftInstructionsView: React.FC<LiftInstructionsViewProps> = ({ onBack }) => {
+  const { t } = useLanguage();
+  
+  const instructions = t.liftInstructionsView.instructions.map((text: string, index: number) => ({
+    icon: instructionIcons[index] || Building,
+    text
+  }));
+
   return (
     <div className="pb-24 animate-in slide-in-from-right duration-500 bg-slate-100 dark:bg-slate-900 min-h-screen transition-colors duration-300">
       {/* Background decorative shapes */}
@@ -60,7 +55,7 @@ export const LiftInstructionsView: React.FC<LiftInstructionsViewProps> = ({ onBa
             className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors py-1 group"
           >
             <ArrowLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
-            <span className="text-base font-bold">ফিরে যান</span>
+            <span className="text-base font-bold">{t.common.back}</span>
           </button>
         </div>
       </div>
@@ -73,8 +68,8 @@ export const LiftInstructionsView: React.FC<LiftInstructionsViewProps> = ({ onBa
                 <ArrowUpDown size={28} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">লিফট নির্দেশাবলি</h2>
-                <p className="text-sm opacity-80">নিরাপদ ও সুন্দর অভিজ্ঞতার জন্য</p>
+                <h2 className="text-2xl font-bold">{t.liftInstructionsView.title}</h2>
+                <p className="text-sm opacity-80">{t.liftInstructionsView.subtitle}</p>
               </div>
             </div>
         </div>
@@ -85,7 +80,7 @@ export const LiftInstructionsView: React.FC<LiftInstructionsViewProps> = ({ onBa
           initial="hidden"
           animate="visible"
         >
-          {instructions.map((item, index) => (
+          {instructions.map((item: any, index: number) => (
             <motion.div 
               key={index} 
               className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200/80 dark:border-slate-700/80 rounded-2xl p-4 shadow-sm flex items-start gap-4 transition-all hover:border-indigo-200 dark:hover:border-indigo-700 hover:shadow-lg hover:scale-[1.02]"
@@ -110,8 +105,8 @@ export const LiftInstructionsView: React.FC<LiftInstructionsViewProps> = ({ onBa
               <Phone size={20} />
             </div>
             <div>
-              <p className="font-bold">জরুরি প্রয়োজনে যোগাযোগ করুন</p>
-              <p className="text-lg font-bold tracking-wider">01310-988954 ( রিফাত )</p>
+              <p className="font-bold">{t.liftInstructionsView.emergencyContact}</p>
+              <p className="text-lg font-bold tracking-wider">01310-988954 ( Rifat )</p>
             </div>
           </div>
         </motion.div>
@@ -122,8 +117,8 @@ export const LiftInstructionsView: React.FC<LiftInstructionsViewProps> = ({ onBa
           animate={{ opacity: 1 }}
           transition={{ delay: instructions.length * 0.08 + 0.4 }}
         >
-          <p className="font-bold text-base">ধন্যবাদান্তে,</p>
-          <p className="font-semibold text-sm">হলান টাওয়ারের কর্তৃপক্ষ</p>
+          <p className="font-bold text-base">{t.liftInstructionsView.thanks}</p>
+          <p className="font-semibold text-sm">{t.liftInstructionsView.authority}</p>
         </motion.div>
       </div>
     </div>

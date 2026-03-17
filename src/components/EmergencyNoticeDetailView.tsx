@@ -19,6 +19,9 @@ import {
 import { supabase } from '../../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useLanguage } from '../../lib/LanguageContext';
+import { TRANSLATIONS } from '../../constants';
+
 interface Notice {
   id: string;
   title: string;
@@ -48,6 +51,9 @@ const toBengaliNumber = (num: string | number) => {
 };
 
 export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps> = ({ onBack }) => {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
+  
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [pinInput, setPinInput] = useState('');
@@ -78,7 +84,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
     const start = textareaRef.current.selectionStart;
     const end = textareaRef.current.selectionEnd;
     const selectedText = description.substring(start, end);
-    const newText = description.substring(0, start) + `**${selectedText || 'বোল্ড লেখা'}**` + description.substring(end);
+    const newText = description.substring(0, start) + `**${selectedText || t.emergencyNoticeDetailView.bold}**` + description.substring(end);
     setDescription(newText);
     
     setTimeout(() => {
@@ -156,7 +162,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       setShowLogin(false);
       setPinInput('');
     } else {
-      alert('ভুল পিন কোড!');
+      alert(t.emergencyNoticeDetailView.incorrectPin);
     }
   };
 
@@ -270,7 +276,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
           <button 
             onClick={() => window.open(previewNotice.driveLink, '_blank')}
             className="p-2.5 rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 hover:bg-primary-100 transition-all shrink-0"
-            title="ব্রাউজারে ওপেন করুন"
+            title={t.emergencyNoticeDetailView.openInBrowser}
           >
             <ExternalLink size={20} />
           </button>
@@ -291,8 +297,8 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
           </div>
           
           <div className="w-full bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 rounded-2xl p-4 text-center my-1">
-            <h4 className="text-[17px] font-bold text-rose-600 dark:text-rose-400 mb-1">আপনার গুরুত্বপূর্ণ নোটিশ</h4>
-            <p className="text-[14px] font-medium text-rose-500/80 dark:text-rose-400/80 m-0">সকলকে মেনে চলার জন্য অনুরোধ করা হচ্ছে</p>
+            <h4 className="text-[17px] font-bold text-rose-600 dark:text-rose-400 mb-1">{t.emergencyNoticeDetailView.importantNotice}</h4>
+            <p className="text-[14px] font-medium text-rose-500/80 dark:text-rose-400/80 m-0">{t.emergencyNoticeDetailView.requestFollow}</p>
           </div>
 
           {previewNotice.description && (
@@ -320,7 +326,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
           <button onClick={onBack} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <ChevronLeft size={24} className="text-slate-600 dark:text-slate-300" />
           </button>
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">জরুরী নোটিশ</h2>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white">{t.emergencyNoticeDetailView.title}</h2>
         </div>
         
         <div className="flex items-center gap-2">
@@ -328,7 +334,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
             <button 
               onClick={handleLogout}
               className="p-2.5 rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all"
-              title="লগআউট"
+              title={t.emergencyNoticeDetailView.logout}
             >
               <LogOutIcon size={20} />
             </button>
@@ -362,7 +368,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
               className="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-700"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white">এডমিন লগইন</h3>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white">{t.emergencyNoticeDetailView.adminLogin}</h3>
                 <button onClick={() => setShowLogin(false)} className="text-slate-400 hover:text-rose-500">
                   <X size={24} />
                 </button>
@@ -370,7 +376,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
               
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 block">পিন কোড দিন</label>
+                  <label className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-2 block">{t.emergencyNoticeDetailView.enterPin}</label>
                   <input
                     type="password"
                     value={pinInput}
@@ -387,7 +393,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   onClick={handleLogin}
                   className="w-full bg-primary-600 text-white font-bold py-3 rounded-xl hover:bg-primary-700 active:scale-95 transition-all"
                 >
-                  লগইন করুন
+                  {t.emergencyNoticeDetailView.login}
                 </button>
               </div>
             </motion.div>
@@ -410,12 +416,12 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-500/20"
               >
                 <Plus size={20} />
-                নতুন নোটিশ যোগ করুন
+                {t.emergencyNoticeDetailView.addNotice}
               </button>
             ) : (
               <form onSubmit={handleAddNotice} className="space-y-4">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-slate-800 dark:text-white">নতুন নোটিশ ফরম</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-white">{t.emergencyNoticeDetailView.newNoticeForm}</h3>
                   <button type="button" onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-rose-500">
                     <X size={20} />
                   </button>
@@ -423,18 +429,18 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                 
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">নোটিশের নাম</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">{t.emergencyNoticeDetailView.noticeName}</label>
                     <input 
                       type="text" 
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="উদা: পানির বিল সংক্রান্ত নোটিশ"
+                      placeholder={t.emergencyNoticeDetailView.placeholderTitle}
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                       required
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">তারিখ</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">{t.emergencyNoticeDetailView.date}</label>
                     <div className="flex gap-2">
                       <select 
                         value={day}
@@ -466,13 +472,13 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">পিডিএফ এর নিচের লেখা (ঐচ্ছিক)</label>
+                      <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">{t.emergencyNoticeDetailView.description}</label>
                       <button 
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={handleBoldClick}
                         className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-colors"
-                        title="বোল্ড করুন"
+                        title={t.emergencyNoticeDetailView.boldTooltip}
                       >
                         <Bold size={14} />
                       </button>
@@ -481,17 +487,17 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                       ref={textareaRef}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="পিডিএফ এর নিচে দেখাবে... (বোল্ড করতে লেখা সিলেক্ট করে B বাটনে ক্লিক করুন)"
+                      placeholder={t.emergencyNoticeDetailView.placeholderDesc}
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all min-h-[100px] resize-none"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">ড্রাইভ লিংক (PDF)</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">{t.emergencyNoticeDetailView.pdfLink}</label>
                     <input 
                       type="url" 
                       value={driveLink}
                       onChange={(e) => setDriveLink(e.target.value)}
-                      placeholder="https://drive.google.com/..."
+                      placeholder={t.emergencyNoticeDetailView.placeholderLink}
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                       required
                     />
@@ -503,10 +509,10 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   disabled={isSubmitting}
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'পাবলিশ হচ্ছে...' : (
+                  {isSubmitting ? t.emergencyNoticeDetailView.publishing : (
                     <>
                       <Send size={18} />
-                      পাবলিশ করুন
+                      {t.emergencyNoticeDetailView.publish}
                     </>
                   )}
                 </button>
@@ -520,18 +526,18 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       <div className="max-w-[420px] mx-auto font-['Hind_Siliguri',sans-serif]">
         <div className="flex items-center justify-center gap-2.5 my-2.5 mb-5">
           <div className="w-1 h-7 bg-[#e63946] rounded-[3px]"></div>
-          <h1 className="text-[26px] font-bold text-[#111827] dark:text-white m-0">নোটিশবোর্ড</h1>
+          <h1 className="text-[26px] font-bold text-[#111827] dark:text-white m-0">{t.emergencyNoticeDetailView.noticeBoard}</h1>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <div className="w-10 h-10 border-4 border-[#1f6fa7] border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-sm font-medium text-slate-500">লোড হচ্ছে...</p>
+            <p className="text-sm font-medium text-slate-500">{t.emergencyNoticeDetailView.loading}</p>
           </div>
         ) : notices.length === 0 ? (
           <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl text-center border border-dashed border-slate-200 dark:border-slate-700">
             <FileText size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-            <p className="text-slate-500 dark:text-slate-400 font-medium">কোনো নোটিশ পাওয়া যায়নি</p>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">{t.emergencyNoticeDetailView.noNotice}</p>
           </div>
         ) : (
           <div className="flex flex-col">
@@ -546,7 +552,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                 className="bg-[#1f6fa7] rounded-[14px] p-4 text-white mb-4 flex gap-2.5 items-start cursor-pointer transition-transform active:scale-[0.98] relative pt-8 border-2 border-[#e63946]"
               >
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-br from-[#6a11cb] to-[#2575fc] text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">
-                  📌 পিন করা নোটিশ
+                  📌 {t.emergencyNoticeDetailView.pinnedNotice}
                 </div>
                 
                 <div className="bg-white text-[#1f6fa7] px-2 py-1.5 rounded-[10px] font-semibold text-sm min-w-[82px] text-center self-center shrink-0">
@@ -567,7 +573,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                         setNoticeToEdit(notice);
                       }}
                       className="p-2 rounded-xl transition-all shadow-sm bg-blue-500 hover:bg-blue-600 text-white"
-                      title="এডিট"
+                      title={t.emergencyNoticeDetailView.edit}
                     >
                       <Edit size={16} />
                     </button>
@@ -577,7 +583,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                         handleTogglePin(notice.id);
                       }}
                       className="p-2 rounded-xl transition-all shadow-sm bg-amber-500 hover:bg-amber-600 text-white"
-                      title="আনপিন করুন"
+                      title={t.emergencyNoticeDetailView.unpinNotice}
                     >
                       <Pin size={16} />
                     </button>
@@ -587,7 +593,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                         setNoticeToDelete(notice.id);
                       }}
                       className="p-2 rounded-xl bg-rose-500/80 hover:bg-rose-600 text-white transition-all shadow-sm"
-                      title="ডিলিট"
+                      title={t.emergencyNoticeDetailView.delete}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -613,7 +619,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                 >
                   {isFirst && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-br from-[#6a11cb] to-[#2575fc] text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap shadow-sm">
-                      সকল নোটিশ
+                      {t.emergencyNoticeDetailView.allNotices}
                     </div>
                   )}
                   
@@ -635,7 +641,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                           setNoticeToEdit(notice);
                         }}
                         className="p-2 rounded-xl transition-all shadow-sm bg-blue-500 hover:bg-blue-600 text-white"
-                        title="এডিট"
+                        title={t.emergencyNoticeDetailView.edit}
                       >
                         <Edit size={16} />
                       </button>
@@ -645,7 +651,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                           handleTogglePin(notice.id);
                         }}
                         className={`p-2 rounded-xl transition-all shadow-sm ${notice.isPinned ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-white/20 hover:bg-white/30 text-white'}`}
-                        title={notice.isPinned ? "আনপিন করুন" : "পিন করুন"}
+                        title={notice.isPinned ? t.emergencyNoticeDetailView.unpinNotice : t.emergencyNoticeDetailView.pinNotice}
                       >
                         <Pin size={16} />
                       </button>
@@ -655,7 +661,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                           setNoticeToDelete(notice.id);
                         }}
                         className="p-2 rounded-xl bg-rose-500/80 hover:bg-rose-600 text-white transition-all shadow-sm"
-                        title="ডিলিট"
+                        title={t.emergencyNoticeDetailView.delete}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -671,7 +677,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
       {/* Footer Info */}
       <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 text-center">
         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
-          উপরোক্ত সকল নোটিশসমূহ হলান টাওয়ার কর্তৃপক্ষের নির্দেশক্রমে প্রকাশ করা হলো।
+          {t.emergencyNoticeDetailView.footerInfo}
         </p>
       </div>
 
@@ -708,7 +714,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   onClick={confirmDelete}
                   className="flex-1 py-3 bg-rose-500 text-white rounded-xl font-bold hover:bg-rose-600 transition-colors"
                 >
-                  ডিলিট করুন
+                  {t.emergencyNoticeDetailView.delete}
                 </button>
               </div>
             </motion.div>
@@ -731,7 +737,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-700"
             >
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">নোটিশ এডিট</h3>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t.emergencyNoticeDetailView.editNotice}</h3>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">নোটিশের নাম</label>
@@ -740,7 +746,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                     value={noticeToEdit.title}
                     onChange={(e) => setNoticeToEdit({...noticeToEdit, title: e.target.value})}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
-                    placeholder="টাইটেল"
+                    placeholder={t.emergencyNoticeDetailView.titlePlaceholder}
                   />
                 </div>
                 <div>
@@ -751,23 +757,23 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                       value={noticeToEdit.date}
                       onChange={(e) => setNoticeToEdit({...noticeToEdit, date: e.target.value})}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
-                      placeholder="তারিখ (উদা: ১ জানুয়ারি)"
+                      placeholder={t.emergencyNoticeDetailView.datePlaceholder}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">পিডিএফ লিংক</label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">{t.emergencyNoticeDetailView.pdfLinkPlaceholder}</label>
                   <input
                     type="url"
                     value={noticeToEdit.driveLink}
                     onChange={(e) => setNoticeToEdit({...noticeToEdit, driveLink: e.target.value})}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
-                    placeholder="পিডিএফ লিংক"
+                    placeholder={t.emergencyNoticeDetailView.pdfLinkPlaceholder}
                   />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">বিস্তারিত লেখা</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 block">{t.emergencyNoticeDetailView.detailsText}</label>
                     <button 
                       type="button"
                       onMouseDown={(e) => {
@@ -797,7 +803,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                     value={noticeToEdit.description}
                     onChange={(e) => setNoticeToEdit({...noticeToEdit, description: e.target.value})}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900"
-                    placeholder="বিস্তারিত লিখুন"
+                    placeholder={t.emergencyNoticeDetailView.detailsPlaceholder}
                     rows={4}
                   />
                 </div>
@@ -813,7 +819,7 @@ export const EmergencyNoticeDetailView: React.FC<EmergencyNoticeDetailViewProps>
                   onClick={confirmEdit}
                   className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors"
                 >
-                  সেভ করুন
+                  {t.emergencyNoticeDetailView.save}
                 </button>
               </div>
             </motion.div>

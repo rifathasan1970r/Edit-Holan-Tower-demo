@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router-dom';
-import { Building2, Phone, MapPin, ChevronRight, User, CloudSun, Calendar, Zap, Key, Bed, Bath, Maximize, AlertTriangle, X, LogOut, Sun, Moon, Sunset, Wrench, Settings } from 'lucide-react';
+import { Building2, Phone, MapPin, ChevronRight, User, CloudSun, Calendar, Zap, Key, Bed, Bath, Maximize, AlertTriangle, X, LogOut, Sun, Moon, Sunset, Wrench, Settings, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './lib/supabaseClient';
 
@@ -33,6 +33,8 @@ import { PDFDownloadPage } from './components/PDFDownloadPage';
 import { ContactView } from './components/ContactView';
 import { DownloadAppView } from './components/DownloadAppView';
 import { DuePaymentMarquee } from './components/DuePaymentMarquee';
+
+import { useLanguage } from './lib/LanguageContext';
 
 const PATH_TO_VIEW: Record<string, ViewState> = Object.entries(VIEW_TO_PATH).reduce(
   (acc, [view, path]) => ({ ...acc, [path]: view as ViewState }),
@@ -104,6 +106,8 @@ const App: React.FC = () => {
   const [amPm, setAmPm] = useState('');
   const [timeIcon, setTimeIcon] = useState<React.ReactNode>(<CloudSun size={24} className="text-yellow-300" />);
   const [isReloadEnabled, setIsReloadEnabled] = useState(true);
+  const { language, toggleLanguage, t } = useLanguage();
+  
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   
   // Dark Mode State
@@ -127,6 +131,7 @@ const App: React.FC = () => {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
+
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -136,24 +141,24 @@ const App: React.FC = () => {
       
       // 1. Greeting & Icon logic
       if (totalMinutes >= 300 && totalMinutes < 720) { // 5:00 AM – 11:59 AM
-        setGreeting('শুভ সকাল');
+        setGreeting(t.greetings.morning);
         setTimeIcon(<Sun size={24} className="text-yellow-300 animate-pulse" />);
       } else if (totalMinutes >= 720 && totalMinutes < 960) { // 12:00 PM – 3:59 PM
-        setGreeting('শুভ দুপুর');
+        setGreeting(t.greetings.noon);
         setTimeIcon(<Sun size={24} className="text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.8)]" />);
       } else if (totalMinutes >= 960 && totalMinutes < 1080) { // 4:00 PM – 6:00 PM
-        setGreeting('শুভ বিকেল');
+        setGreeting(t.greetings.afternoon);
         setTimeIcon(<Sunset size={24} className="text-orange-300" />);
       } else if (totalMinutes >= 1080 && totalMinutes < 1170) { // 6:00 PM – 7:30 PM
-        setGreeting('শুভ সন্ধ্যা');
+        setGreeting(t.greetings.evening);
         setTimeIcon(<Sunset size={24} className="text-orange-400" />);
       } else { // 7:30 PM – 4:59 AM
-        setGreeting('শুভ রাত্রি');
+        setGreeting(t.greetings.night);
         setTimeIcon(<Moon size={24} className="text-blue-100 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" />);
       }
 
       const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      setCurrentDate(now.toLocaleDateString('bn-BD', options));
+      setCurrentDate(now.toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', options));
       
       // Time parts
       const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
@@ -164,8 +169,13 @@ const App: React.FC = () => {
       // Convert HH:MM and SS to Bangla digits for consistency with the rest of the app
       const toBanglaDigits = (str: string) => str.replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[parseInt(d)]);
       
-      setCurrentTime(toBanglaDigits(`${h}:${m}`));
-      setCurrentSeconds(toBanglaDigits(s));
+      if (language === 'bn') {
+        setCurrentTime(toBanglaDigits(`${h}:${m}`));
+        setCurrentSeconds(toBanglaDigits(s));
+      } else {
+        setCurrentTime(`${h}:${m}`);
+        setCurrentSeconds(s);
+      }
       setAmPm(ap);
     };
 
@@ -237,8 +247,6 @@ const App: React.FC = () => {
     window.scrollTo(0, 0);
   }, [currentView, selectedUnit, showSummaryList]);
 
-  const t = TRANSLATIONS['bn']; // Default to Bangla for now, can be dynamic if needed
-
   const handleExitApp = () => {
     try {
       window.close();
@@ -285,7 +293,7 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h2 className="text-xl font-light opacity-90 mb-1">{greeting},</h2>
-                    <h1 className="text-2xl font-bold tracking-tight">হলান টাওয়ার বাসী</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">{t.hollanTowerResident}</h1>
                   </div>
                   <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg">
                     {timeIcon}
@@ -298,13 +306,13 @@ const App: React.FC = () => {
                          <Calendar size={20} className="text-white" />
                       </div>
                       <div>
-                         <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">আজকের তারিখ</p>
+                         <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">{t.todayDate}</p>
                          <p className="text-sm font-bold leading-tight">{currentDate}</p>
                       </div>
                    </div>
                    <div className="text-right border-l border-white/10 pl-4 flex flex-col justify-center items-end">
                       <p className="text-2xl font-bold font-mono tracking-wider leading-none">{currentTime}</p>
-                      <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} সেকেন্ড</p>
+                      <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} {t.seconds}</p>
                       <p className="text-sm font-black opacity-100 mt-2 leading-none tracking-widest bg-white/20 px-2 py-1 rounded-md">{amPm}</p>
                    </div>
                 </div>
@@ -314,9 +322,9 @@ const App: React.FC = () => {
             {/* Grid Menu */}
             <div>
               <div className="flex justify-between items-end mb-4 px-1">
-                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">সেবা কেন্দ্র</h3>
+                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t.serviceCenter}</h3>
                  <button onClick={() => setCurrentView('MENU')} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
-                   সব দেখুন
+                   {t.viewAll}
                  </button>
               </div>
               
@@ -336,7 +344,7 @@ const App: React.FC = () => {
                       <item.icon size={18} />
                     </div>
                     <div className="w-full px-1 mt-1">
-                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{item.label}</h4>
+                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{t.menuItems[item.id as keyof typeof t.menuItems]?.label || item.label}</h4>
                     </div>
                   </motion.button>
                 ))}
@@ -373,7 +381,7 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <h2 className="text-xl font-light opacity-90 mb-1">{greeting},</h2>
-                    <h1 className="text-2xl font-bold tracking-tight">হলান টাওয়ার বাসী</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">{t.hollanTowerResident}</h1>
                   </div>
                   <div className="bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20 shadow-lg">
                     {timeIcon}
@@ -386,13 +394,13 @@ const App: React.FC = () => {
                          <Calendar size={20} className="text-white" />
                       </div>
                       <div>
-                         <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">আজকের তারিখ</p>
+                         <p className="text-[10px] opacity-70 uppercase tracking-wider font-semibold">{t.todayDate}</p>
                          <p className="text-sm font-bold leading-tight">{currentDate}</p>
                       </div>
                    </div>
                    <div className="text-right border-l border-white/10 pl-4 flex flex-col justify-center items-end">
                       <p className="text-2xl font-bold font-mono tracking-wider leading-none">{currentTime}</p>
-                      <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} সেকেন্ড</p>
+                      <p className="text-[12px] font-bold font-mono opacity-80 mt-1.5 leading-none">{currentSeconds} {t.seconds}</p>
                       <p className="text-sm font-black opacity-100 mt-2 leading-none tracking-widest bg-white/20 px-2 py-1 rounded-md">{amPm}</p>
                    </div>
                 </div>
@@ -402,9 +410,9 @@ const App: React.FC = () => {
             {/* Grid Menu */}
             <div>
               <div className="flex justify-between items-end mb-4 px-1">
-                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">সেবা কেন্দ্র</h3>
+                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t.serviceCenter}</h3>
                  <button onClick={() => setCurrentView('MENU')} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors">
-                   সব দেখুন
+                   {t.viewAll}
                  </button>
               </div>
               
@@ -424,7 +432,7 @@ const App: React.FC = () => {
                       <item.icon size={18} />
                     </div>
                     <div className="w-full px-1 mt-1">
-                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{item.label}</h4>
+                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{t.menuItems[item.id as keyof typeof t.menuItems]?.label || item.label}</h4>
                     </div>
                   </motion.button>
                 ))}
@@ -448,7 +456,7 @@ const App: React.FC = () => {
               </div>
               
               <div className="flex justify-between items-end mb-4 px-1">
-                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">সকল সেবা</h3>
+                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t.allServices}</h3>
               </div>
               
               <div className="grid grid-cols-3 gap-3">
@@ -467,7 +475,7 @@ const App: React.FC = () => {
                       <item.icon size={18} />
                     </div>
                     <div className="w-full px-1 mt-1">
-                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{item.label}</h4>
+                      <h4 className="font-bold text-slate-800 dark:text-white text-[10px] leading-tight group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors line-clamp-2">{t.menuItems[item.id as keyof typeof t.menuItems]?.label || item.label}</h4>
                     </div>
                   </motion.button>
                 ))}
@@ -479,7 +487,7 @@ const App: React.FC = () => {
                   <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                      <Wrench size={20} />
                   </div>
-                  <div className="text-left"><h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">মেইনটেন্যান্স ডেস্ক</h4></div>
+                  <div className="text-left"><h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">{t.maintenanceDesk}</h4></div>
                   <ChevronRight className="ml-auto text-slate-300 dark:text-slate-600" size={18} />
                </button>
 
@@ -487,14 +495,14 @@ const App: React.FC = () => {
                   <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                      <Settings size={20} />
                   </div>
-                  <div className="text-left"><h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">সেটিং</h4></div>
+                  <div className="text-left"><h4 className="text-base font-bold text-slate-800 dark:text-white mb-0.5">{t.settings}</h4></div>
                   <ChevronRight className="ml-auto text-slate-300 dark:text-slate-600" size={18} />
                </button>
             </div>
           </div>
         } />
 
-        <Route path="/service-charge.html" element={<ServiceChargeView selectedUnit={selectedUnit} onUnitSelect={setSelectedUnit} showSummaryList={showSummaryList} onSummaryToggle={setShowSummaryList} />} />
+        <Route path="/service-charge.html" element={<ServiceChargeView lang={language} selectedUnit={selectedUnit} onUnitSelect={setSelectedUnit} showSummaryList={showSummaryList} onSummaryToggle={setShowSummaryList} />} />
         <Route path="/desco.html" element={<DescoView setView={setCurrentView} />} />
         <Route path="/desco-info.html" element={<DescoInfoView onBack={() => setCurrentView('DESCO')} />} />
         <Route path="/desco-rules.html" element={<DescoRulesView onBack={() => setCurrentView('DESCO')} />} />
@@ -542,26 +550,30 @@ const App: React.FC = () => {
             />
             <div>
               <h1 className="text-lg font-extrabold text-slate-800 dark:text-white leading-tight">
-                {APP_NAME}
+                {t.appName}
               </h1>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
-                <MapPin size={10} /> হলান, দক্ষিণখান
+                <MapPin size={10} /> {t.location}
               </p>
             </div>
           </div>
-          <div className="ml-auto">
-             <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500">
-                <User size={16} />
-             </div>
+          <div className="ml-auto flex items-center gap-2">
+             <button 
+                onClick={toggleLanguage}
+                className="px-3 h-9 rounded-full bg-white dark:bg-slate-800 border-2 border-primary-500 dark:border-primary-400 flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold text-xs shadow-md active:scale-95 transition-all"
+             >
+                <Languages size={12} />
+                <span className="border-l border-primary-200 dark:border-primary-800 pl-2">{language === 'bn' ? 'English' : 'বাংলা'}</span>
+             </button>
           </div>
         </div>
         {hasNotice && (
           <NoticeBoard 
             key={currentView} 
             text={
-              currentView === 'DESCO' ? DESCO_NOTICE_TEXT : 
-              currentView === 'SERVICE_CHARGE' ? SERVICE_CHARGE_NOTICE_TEXT :
-              (currentView === 'MENU' || currentView === 'EMERGENCY') ? EMERGENCY_NOTICE_TEXT : undefined
+              currentView === 'DESCO' ? t.descoNotice : 
+              currentView === 'SERVICE_CHARGE' ? t.serviceChargeNotice :
+              (currentView === 'MENU' || currentView === 'EMERGENCY') ? t.emergencyNotice : undefined
             } 
           />
         )}
@@ -577,7 +589,7 @@ const App: React.FC = () => {
           {currentView !== 'HOME' && (
             <div className="mt-12 mb-8 text-center">
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 tracking-widest">
-                Design By A.H.M RIFAT HASAN
+                {t.designBy}
               </p>
             </div>
           )}

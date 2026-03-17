@@ -3,11 +3,18 @@ import { AlertTriangle, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { EMERGENCY_NOTICE_TEXT } from '../../constants';
 
+import { useLanguage } from '../../lib/LanguageContext';
+import { TRANSLATIONS } from '../../constants';
+
 interface EmergencyNoticeBoxProps {
   onClick: () => void;
 }
 
-const EmergencyNoticeBox: React.FC<EmergencyNoticeBoxProps> = ({ onClick }) => (
+const EmergencyNoticeBox: React.FC<EmergencyNoticeBoxProps> = ({ onClick }) => {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
+
+  return (
   <motion.button 
     onClick={onClick}
     animate={{ 
@@ -24,12 +31,13 @@ const EmergencyNoticeBox: React.FC<EmergencyNoticeBoxProps> = ({ onClick }) => (
     <div className="flex items-start gap-3">
       <AlertTriangle className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={20} />
       <div>
-        <h4 className="font-bold text-red-900 dark:text-red-100 text-sm mb-0.5">জরুরী নোটিশ</h4>
-        <p className="text-[10px] text-red-800 dark:text-red-200 leading-tight line-clamp-1">বিস্তারিত দেখুন...</p>
+        <h4 className="font-bold text-red-900 dark:text-red-100 text-sm mb-0.5">{t.emergencyNoticeDetailView.title}</h4>
+        <p className="text-[10px] text-red-800 dark:text-red-200 leading-tight line-clamp-1">{t.emergencyNoticeDetailView.detailsText}...</p>
       </div>
     </div>
     <ChevronRight className="text-red-500 shrink-0" size={18} />
   </motion.button>
-);
+  );
+};
 
 export default EmergencyNoticeBox;

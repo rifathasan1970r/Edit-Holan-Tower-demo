@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalStorage } from '../src/hooks/useLocalStorage';
+import { useLanguage } from '../lib/LanguageContext';
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -32,53 +33,53 @@ const WhatsAppIcon = () => (
 const initialContacts = [
   {
     id: 'cat-1',
-    category: 'বিল্ডিং ম্যানেজমেন্ট',
+    category: 'management',
     icon: 'ShieldAlert',
     colorClass: 'bg-green-100',
     iconColor: 'text-green-600 dark:text-green-400',
     people: [
-      { id: '1', name: 'মোঃ মোজাম্মেল হক', role: 'সেক্রেটারি', phone: '01718635845', wa: true },
-      { id: '2', name: 'মো: শাহীন', role: 'ক্যাশিয়ার', phone: '01822532977', wa: true },
-      { id: '3', name: 'মো গোলাম ফারুক', role: 'কার্যকরী সদস্য', phone: '01822940728', wa: true },
-      { id: '4', name: 'রিফাত', role: 'নিরাপত্তা ও তত্ত্বাবধান', phone: '+8801310-988954', wa: true },
+      { id: '1', name: 'মোঃ মোজাম্মেল হক', role: 'secretary', phone: '01718635845', wa: true },
+      { id: '2', name: 'মো: শাহীন', role: 'cashier', phone: '01822532977', wa: true },
+      { id: '3', name: 'মো গোলাম ফারুক', role: 'member', phone: '01822940728', wa: true },
+      { id: '4', name: 'রিফাত', role: 'security', phone: '+8801310-988954', wa: true },
     ]
   },
   {
     id: 'cat-2',
-    category: 'নির্মাণ ও মেরামত',
+    category: 'construction',
     icon: 'Hammer',
     colorClass: 'bg-amber-100',
     iconColor: 'text-amber-600 dark:text-amber-400',
     people: [
-      { id: '5', name: 'সম্রাট', role: 'নির্মাণ ঠিকাদার', phone: '01648-496150', wa: true },
-      { id: '6', name: 'সুমন', role: 'বিদ্যুৎ ঠিকাদার', phone: '01674-200082', wa: true },
-      { id: '7', name: 'ইউসুফ', role: 'পয়ঃনিষ্কাশন ঠিকাদার', phone: '01826-535683', wa: true },
-      { id: '8', name: 'এরশাদ', role: 'প্লাম্বিং সার্ভিস', phone: '01946500016', wa: false },
+      { id: '5', name: 'সম্রাট', role: 'contractor', phone: '01648-496150', wa: true },
+      { id: '6', name: 'সুমন', role: 'electrician', phone: '01674-200082', wa: true },
+      { id: '7', name: 'ইউসুফ', role: 'plumber', phone: '01826-535683', wa: true },
+      { id: '8', name: 'এরশাদ', role: 'plumbing', phone: '01946500016', wa: false },
     ]
   },
   {
     id: 'cat-3',
-    category: 'দৈনিক সেবা',
+    category: 'daily',
     icon: 'Wrench',
     colorClass: 'bg-indigo-100',
     iconColor: 'text-indigo-600 dark:text-indigo-400',
     people: [
-      { id: '9', name: 'পরিচ্ছন্নতা কর্মী', role: 'ময়লা ফেলার সার্ভিস', phone: '01797550346', wa: false },
-      { id: '10', name: 'গ্যাস সরবরাহকারী', role: 'গ্যাস সিলিন্ডার', phone: '01660183718', wa: false },
+      { id: '9', name: 'পরিচ্ছন্নতা কর্মী', role: 'cleaner', phone: '01797550346', wa: false },
+      { id: '10', name: 'গ্যাস সরবরাহকারী', role: 'gas', phone: '01660183718', wa: false },
     ]
   },
   {
     id: 'cat-4',
-    category: 'ইন্টারনেট ও টিভি',
+    category: 'internet',
     icon: 'Wifi',
     colorClass: 'bg-sky-100',
     iconColor: 'text-sky-600 dark:text-sky-400',
     people: [
-      { id: '11', name: 'সার্কেল নেটওয়ার্ক', role: 'ISP হটলাইন', phone: '16237', wa: false },
-      { id: '12', name: 'সার্কেল নেটওয়ার্ক', role: 'ISP সাপোর্ট', phone: '09611-800900', wa: false },
-      { id: '13', name: 'নেট 3 লিংক', role: 'ISP বিকল্প', phone: '09639179384', wa: false },
-      { id: '14', name: 'টাস কেবল', role: 'ডিস / কেবল টিভি', phone: '01951498883', wa: false },
-      { id: '15', name: 'সোহান', role: 'ডিস বিল কালেক্টর', phone: '01329727781', wa: false },
+      { id: '11', name: 'সার্কেল নেটওয়ার্ক', role: 'ispHotline', phone: '16237', wa: false },
+      { id: '12', name: 'সার্কেল নেটওয়ার্ক', role: 'ispSupport', phone: '09611-800900', wa: false },
+      { id: '13', name: 'নেট 3 লিংক', role: 'ispAlt', phone: '09639179384', wa: false },
+      { id: '14', name: 'টাস কেবল', role: 'dish', phone: '01951498883', wa: false },
+      { id: '15', name: 'সোহান', role: 'dishCollector', phone: '01329727781', wa: false },
     ]
   },
 ];
@@ -125,6 +126,7 @@ const Card = ({
 );
 
 export const EmergencyView = () => {
+  const { t } = useLanguage();
   const [contacts, setContacts] = useLocalStorage('emergencyContacts_v4', initialContacts);
   const [isAdmin, setIsAdmin] = useLocalStorage('isAdmin_v4', false);
   const [showLogin, setShowLogin] = useState(false);
@@ -137,9 +139,9 @@ export const EmergencyView = () => {
   const copyText = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('কপি হয়েছে: ' + text);
+      alert(t.common.copySuccess + ': ' + text);
     } catch (err) {
-      alert('কপি করা যায়নি');
+      alert(t.common.error);
     }
   };
 
@@ -150,7 +152,7 @@ export const EmergencyView = () => {
       setError('');
       setPassword('');
     } else {
-      setError('ভুল পাসওয়ার্ড');
+      setError(t.common.incorrectPin);
     }
   };
   
@@ -169,7 +171,7 @@ export const EmergencyView = () => {
   };
 
   const handleDelete = (personId: string) => {
-    if (window.confirm('আপনি কি নিশ্চিত যে আপনি এই নম্বরটি মুছে ফেলতে চান?')) {
+    if (window.confirm(t.emergency.confirmDelete)) {
       const newContacts = contacts.map(cat => ({
         ...cat,
         people: cat.people.filter(p => p.id !== personId)
@@ -179,7 +181,7 @@ export const EmergencyView = () => {
   }
 
   const handleDeleteCategory = (categoryId: string) => {
-    if (window.confirm('আপনি কি নিশ্চিত যে আপনি এই সম্পূর্ণ ডিপার্টমেন্টটি মুছে ফেলতে চান? এর অন্তর্গত সমস্ত নম্বর মুছে যাবে।')) {
+    if (window.confirm(t.emergency.confirmDeleteDept)) {
       const newContacts = contacts.filter(cat => cat.id !== categoryId);
       setContacts(newContacts);
     }
@@ -245,7 +247,7 @@ export const EmergencyView = () => {
           href={`tel:${cleanPhone}`} 
           className="flex-1 px-3 py-2.5 bg-blue-600 rounded-xl text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-1.5 active:scale-95"
         >
-          <Phone size={14} /> কল
+          <Phone size={14} /> {t.common.call}
         </a>
         {wa && (
           <a 
@@ -259,7 +261,7 @@ export const EmergencyView = () => {
           onClick={() => copyText(phone)} 
           className="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors shadow-sm flex items-center justify-center gap-1.5 active:scale-95"
         >
-          <Copy size={14} /> কপি
+          <Copy size={14} /> {t.common.copy}
         </button>
       </div>
     );
@@ -297,18 +299,18 @@ export const EmergencyView = () => {
             <X size={16}/>
           </button>
           <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
-            {contact.id ? 'নম্বর এডিট করুন' : 'নতুন নম্বর যোগ করুন'}
+            {contact.id ? t.emergency.editNumber : t.emergency.addNumber}
           </h3>
           <form onSubmit={handleSubmit} className='space-y-3'>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="নাম" className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" required />
-            <input type="text" name="role" value={formData.role} onChange={handleChange} placeholder="ভূমিকা" className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" required />
-            <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="মোবাইল নম্বর" className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" required />
+            <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder={t.common.name} className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" required />
+            <input type="text" name="role" value={formData.role} onChange={handleChange} placeholder={t.common.role} className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" required />
+            <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder={t.common.phone} className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" required />
             <div className='flex items-center gap-2'>
               <input type="checkbox" name="wa" id="wa" checked={formData.wa} onChange={handleChange} className='h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500' />
-              <label htmlFor="wa" className='text-sm font-medium text-slate-700 dark:text-slate-300'>WhatsApp আছে</label>
+              <label htmlFor="wa" className='text-sm font-medium text-slate-700 dark:text-slate-300'>{t.emergency.hasWhatsApp}</label>
             </div>
             <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors">
-              সেভ করুন
+              {t.common.save}
             </button>
           </form>
         </motion.div>
@@ -344,18 +346,18 @@ export const EmergencyView = () => {
           <button onClick={onClose} className='absolute top-3 right-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600'>
             <X size={16}/>
           </button>
-          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">নতুন ডিপার্টমেন্ট যোগ করুন</h3>
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">{t.emergency.addDept}</h3>
           <form onSubmit={handleSubmit} className='space-y-3'>
             <input 
               type="text" 
               value={name} 
               onChange={e => setName(e.target.value)} 
-              placeholder="ডিপার্টমেন্টের নাম"
+              placeholder={t.emergency.deptName}
               className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400" 
               required 
             />
             <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors">
-              তৈরি করুন
+              {t.common.add}
             </button>
           </form>
         </motion.div>
@@ -381,17 +383,17 @@ export const EmergencyView = () => {
               className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-xl"
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">অ্যাডমিন লগইন</h3>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">{t.common.adminLogin}</h3>
               <input 
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="পাসওয়ার্ড দিন"
+                placeholder={t.common.enterPassword}
                 className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg mb-2 focus:ring-2 focus:ring-indigo-500 outline-none placeholder:text-slate-400"
               />
               {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
               <button onClick={handleLogin} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors">
-                লগইন
+                {t.common.login}
               </button>
             </motion.div>
           </motion.div>
@@ -413,12 +415,12 @@ export const EmergencyView = () => {
 
       <div className="flex justify-between items-center pr-2">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-white px-1 border-l-4 border-red-500 pl-3">
-          জরুরী সার্ভিস ও কন্ট্রাক্টর
+          {t.emergency.title}
         </h2>
         <div className="flex items-center gap-2">
           {isAdmin && (
             <button onClick={() => setShowCategoryEditor(true)} className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
-              নতুন ডিপার্টমেন্ট
+              {t.emergency.addDept}
             </button>
           )}
           {!isAdmin ? (
@@ -427,7 +429,7 @@ export const EmergencyView = () => {
             </button>
           ) : (
             <button onClick={handleLogout} className="text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
-              <LogOut size={14}/> লগআউট
+              <LogOut size={14}/> {t.common.logout}
             </button>
           )}
         </div>
@@ -444,14 +446,14 @@ export const EmergencyView = () => {
             <Siren size={28} className="animate-pulse" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-extrabold text-red-600 dark:text-red-400 leading-none mb-1">জরুরী জাতীয় হেল্পলাইন</h2>
-            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">বাংলাদেশের যে কোনো জরুরী সহায়তা</p>
+            <h2 className="text-xl font-extrabold text-red-600 dark:text-red-400 leading-none mb-1">{t.emergency.helplineTitle}</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">{t.emergency.helplineSubtitle}</p>
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between bg-white dark:bg-slate-700 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
-           <span className="text-3xl font-black tracking-widest text-red-600 dark:text-red-400 pl-2">৯৯৯</span>
+           <span className="text-3xl font-black tracking-widest text-red-600 dark:text-red-400 pl-2">{t.emergency.helplineNumber}</span>
            <a className="px-5 py-2.5 bg-red-600 text-white rounded-lg font-bold text-sm shadow hover:bg-red-700 active:scale-95 transition-all flex items-center gap-2" href="tel:999">
-             <Phone size={16} /> কল করুন
+             <Phone size={16} /> {t.common.call}
            </a>
         </div>
       </motion.div>
@@ -462,9 +464,9 @@ export const EmergencyView = () => {
           return (
             <div key={category.id} className="mb-4 sm:mb-0">
             <Card 
-              title={category.category}
+              title={t.emergency.categories[category.category as keyof typeof t.emergency.categories] || category.category}
               icon={Icon}
-              desc={`${category.people.length} contacts`}
+              desc={`${category.people.length} ${t.common.contacts || 'contacts'}`}
               colorClass={category.colorClass || 'bg-white'}
               iconColor={category.iconColor || 'text-slate-500'}
             >
@@ -492,11 +494,11 @@ export const EmergencyView = () => {
                       </div>
                     )}
                     <div className="flex justify-between items-center">
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{person.role}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t.emergency.roles[person.role as keyof typeof t.emergency.roles] || person.role}</p>
                       <p className="font-bold text-red-600 dark:text-red-400 text-base">{person.name}</p>
                     </div>
                     <div className="flex justify-between items-center mt-1">
-                      <p className="font-bold text-slate-800 dark:text-white text-base">নম্বর</p>
+                      <p className="font-bold text-slate-800 dark:text-white text-base">{t.common.phone}</p>
                       <p className="font-mono font-extrabold text-red-600 dark:text-red-400 text-lg">{person.phone}</p>
                     </div>
                     <ActionButtons phone={person.phone} wa={person.wa} />

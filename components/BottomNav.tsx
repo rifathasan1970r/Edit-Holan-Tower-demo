@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { BOTTOM_NAV_ITEMS, VIEW_TO_PATH } from '../constants';
 import { ViewState } from '../types';
 
+import { useLanguage } from '../lib/LanguageContext';
+
 interface BottomNavProps {
   currentView: ViewState;
 }
@@ -16,6 +18,7 @@ interface NavButtonProps {
 }
 
 const NavButton = React.memo(({ item, isActive }: NavButtonProps) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const isHome = item.id === 'home';
 
@@ -89,7 +92,7 @@ const NavButton = React.memo(({ item, isActive }: NavButtonProps) => {
           <span className={`text-[10px] font-bold tracking-wide transition-all duration-300 ${
             isActive ? 'text-[#4C1D95] dark:text-purple-400' : 'text-slate-400 dark:text-slate-500'
           }`}>
-            {item.label}
+            {t.bottomNav[item.id as keyof typeof t.bottomNav]}
           </span>
           
           {/* Active Indicator Line */}

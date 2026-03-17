@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Moon, Sun, Settings, ChevronRight, ShieldCheck, Lock, X, Check, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Settings, ChevronRight, ShieldCheck, Lock, X, Check, RefreshCw, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface SettingsViewProps {
   onBack: () => void;
@@ -11,6 +12,7 @@ interface SettingsViewProps {
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ onBack, darkMode, toggleDarkMode, maintenanceMode }) => {
+  const { language, toggleLanguage } = useLanguage();
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [adminPin, setAdminPin] = useState('');
@@ -111,8 +113,31 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onBack, darkMode, to
 
       {/* Settings Card */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden space-y-1">
-        {/* Dark Mode Toggle */}
+        {/* Language Toggle */}
         <div className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 flex items-center justify-center">
+              <Languages size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 dark:text-white text-sm">ভাষা</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                {language === 'bn' ? 'বাংলা' : 'English'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={toggleLanguage}
+            className="px-3 h-8 rounded-full bg-blue-500 text-white flex items-center gap-1.5 font-bold text-[10px] shadow-sm active:scale-95 transition-all"
+          >
+            <Languages size={14} />
+            <span>{language === 'bn' ? 'English' : 'বাংলা'}</span>
+          </button>
+        </div>
+
+        {/* Dark Mode Toggle */}
+        <div className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-t border-slate-50 dark:border-slate-700">
           <div className="flex items-center gap-4">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
               darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-orange-50 text-orange-500'
@@ -141,6 +166,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onBack, darkMode, to
             />
           </button>
         </div>
+
 
         {/* Admin Panel Entry */}
         <div 

@@ -3,6 +3,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Wallet, CreditCard, Banknote, Drop
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import EmergencyNoticeBox from '../src/components/EmergencyNoticeBox';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface AccountsViewProps {
   onBack: () => void;
@@ -51,6 +52,9 @@ const getDefaultAccounts = (year: number): MonthlyAccountData[] =>
   }));
 
 export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) => {
+  const { t, language } = useLanguage();
+  const MONTHS = t.months;
+  
   const currentMonthName = useMemo(() => {
     const date = new Date();
     let monthIndex = date.getMonth() - 1;
@@ -93,11 +97,11 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
       if (existing) {
         // Migration: convert legacy 'others' number to otherItems array
         if (existing.income && typeof existing.income.others === 'number' && !existing.income.otherItems) {
-          existing.income.otherItems = existing.income.others > 0 ? [{ label: 'অন্যান্য আয়', amount: existing.income.others }] : [];
+          existing.income.otherItems = existing.income.others > 0 ? [{ label: language === 'bn' ? 'অন্যান্য আয়' : 'Other Income', amount: existing.income.others }] : [];
           delete existing.income.others;
         }
         if (existing.expense && typeof existing.expense.others === 'number' && !existing.expense.otherItems) {
-          existing.expense.otherItems = existing.expense.others > 0 ? [{ label: 'অন্যান্য ব্যয়', amount: existing.expense.others }] : [];
+          existing.expense.otherItems = existing.expense.others > 0 ? [{ label: language === 'bn' ? 'অন্যান্য ব্যয়' : 'Other Expense', amount: existing.expense.others }] : [];
           delete existing.expense.others;
         }
         
@@ -203,7 +207,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
       setEditData(null);
     } catch (err) {
       console.error("Save error:", err);
-      alert("তথ্য সেভ করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।");
+      alert(t.common.error);
     } finally {
       setIsSaving(false);
     }
@@ -311,7 +315,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
             <div className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center group-hover:border-emerald-200 group-hover:bg-emerald-50 transition-all">
               <ArrowLeft size={18} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-widest">ফিরে যান</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest">{t.common.back}</span>
           </button>
           
           <div className="flex items-center gap-2">
@@ -332,8 +336,8 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
         {/* Title Section */}
         <div className="space-y-4">
           <div className="space-y-1">
-              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">স্বচ্ছ হিসাব খাতা</h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">বাৎসরিক আর্থিক বিবরণী • {selectedYear}</p>
+              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{t.accounts.title}</h2>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t.accounts.subtitle} • {selectedYear}</p>
           </div>
           
           {/* Year Selection Tabs - Matching ServiceChargeView style */}
@@ -357,7 +361,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
         >
           <div className="p-6 border-b border-white/10">
             <div className="flex justify-between items-center">
-              <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">বর্তমান উদ্বৃত্ত</p>
+              <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t.accounts.currentBalance}</p>
               <div className="w-8 h-8 rounded-lg bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-sm backdrop-blur-sm">
                 <PieChart size={18} />
               </div>
@@ -374,14 +378,14 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
             <div className="p-5 space-y-1">
               <div className="flex items-center gap-2 text-white/90">
                 <ArrowUpRight size={14} className="text-emerald-300" />
-                <p className="text-[9px] font-bold uppercase tracking-wider">মোট আয়</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider">{t.accounts.totalIncome}</p>
               </div>
               <p className="text-xl font-extrabold text-white">৳{summary.totalIncome.toLocaleString()}</p>
             </div>
             <div className="p-5 space-y-1">
               <div className="flex items-center gap-2 text-white/90">
                 <ArrowDownRight size={14} className="text-rose-300" />
-                <p className="text-[9px] font-bold uppercase tracking-wider">মোট ব্যয়</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider">{t.accounts.totalExpense}</p>
               </div>
               <p className="text-xl font-extrabold text-white">৳{summary.totalExpense.toLocaleString()}</p>
             </div>
@@ -390,10 +394,10 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
 
         {/* Ledger Table Header */}
         <div className="grid grid-cols-12 px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-y border-slate-200 bg-slate-50/50">
-          <div className="col-span-4 border-r border-slate-200/50 pr-2">বিবরণ (Month)</div>
-          <div className="col-span-3 text-right border-r border-slate-200/50 px-2">আয় (+)</div>
-          <div className="col-span-3 text-right border-r border-slate-200/50 px-2">ব্যয় (-)</div>
-          <div className="col-span-2 text-right pl-2">উদ্বৃত্ত</div>
+          <div className="col-span-4 border-r border-slate-200/50 pr-2">{t.common.month}</div>
+          <div className="col-span-3 text-right border-r border-slate-200/50 px-2">{t.common.income} (+)</div>
+          <div className="col-span-3 text-right border-r border-slate-200/50 px-2">{t.common.expense} (-)</div>
+          <div className="col-span-2 text-right pl-2">{t.common.balance}</div>
         </div>
 
         {/* Monthly Ledger Rows */}
@@ -424,7 +428,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                           
                           {isFutureMonth ? (
                             <div className="col-span-8 text-center text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em] flex items-center justify-center h-full">
-                              আসন্ন
+                              {t.accounts.upcoming}
                             </div>
                           ) : (
                             <>
@@ -445,7 +449,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                             <div className="flex items-center justify-center w-3 h-3 rounded-full bg-slate-50 border border-slate-200">
                               <Plus size={7} className="text-slate-400" />
                             </div>
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-tight">বিস্তারিত তথ্য দেখুন</span>
+                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-tight">{t.common.viewDetails}</span>
                             <div className="flex items-center justify-center w-3 h-3 rounded-full bg-slate-50 border border-slate-200">
                               <ChevronRight size={7} className={`text-slate-400 transition-transform ${isEditing ? 'rotate-90' : ''}`} />
                             </div>
@@ -469,15 +473,15 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                     <div className="w-5 h-5 bg-emerald-50 text-emerald-600 rounded-md flex items-center justify-center">
                                       <TrendingUp size={12} />
                                     </div>
-                                    <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">আয় বিবরণী</h4>
+                                    <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{t.accounts.incomeDetails}</h4>
                                   </div>
                                   <div className="h-[1px] flex-1 mx-4 bg-emerald-50"></div>
                                 </div>
                                 <div className="space-y-2">
                                   {/* Fixed Income Fields */}
                                   {[
-                                    { label: `${MONTHS[(MONTHS.indexOf(acc.month) - 1 + 12) % 12]} মাসের উদ্বৃত্ত টাকা`, field: 'surplus' },
-                                    { label: 'সার্ভিস চার্জ', field: 'serviceCharge' }
+                                    { label: `${MONTHS[(MONTHS.indexOf(acc.month) - 1 + 12) % 12]} ${t.accounts.surplusFromLastMonth}`, field: 'surplus' },
+                                    { label: t.menu.serviceCharge, field: 'serviceCharge' }
                                   ].map((item) => (
                                     <div key={item.field} className="flex items-center justify-between text-xs">
                                       <span className="text-slate-500 font-medium">{item.label}</span>
@@ -497,7 +501,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                   {/* Dynamic Income Title */}
                                   {(editData.income.otherItems?.length > 0 || isAuthorized) && (
                                     <div className="pt-2 pb-1 border-t border-emerald-50/50">
-                                      <p className="text-[9px] font-bold text-emerald-500/70 uppercase tracking-tighter">অন্যান্য হতে আয়</p>
+                                      <p className="text-[9px] font-bold text-emerald-500/70 uppercase tracking-tighter">{t.accounts.otherIncome}</p>
                                     </div>
                                   )}
 
@@ -530,7 +534,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                         </>
                                       ) : (
                                         <div className="flex items-center justify-between w-full text-xs">
-                                          <span className="text-slate-500 font-medium">{item.label || 'অন্যান্য আয়'}</span>
+                                          <span className="text-slate-500 font-medium">{item.label || t.accounts.otherIncome}</span>
                                           <span className="font-bold text-slate-700">৳ {item.amount.toLocaleString()}</span>
                                         </div>
                                       )}
@@ -544,13 +548,13 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                       className="w-full py-2 mt-1 border border-dashed border-emerald-200 rounded-lg flex items-center justify-center gap-2 text-emerald-600 hover:bg-emerald-50 transition-all group"
                                     >
                                       <Plus size={14} className="group-hover:scale-110 transition-transform" />
-                                      <span className="text-[10px] font-bold uppercase tracking-wider">অন্যান্য আয় যোগ করুন</span>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider">{t.accounts.otherIncome} {t.common.add}</span>
                                     </button>
                                   )}
 
                                   {/* Income Total */}
                                   <div className="pt-2 border-t border-emerald-50 flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">মোট আয়</span>
+                                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{t.common.total} {t.common.income}</span>
                                     <span className="text-xs font-black text-emerald-700">
                                       ৳ {(editData.income.surplus + editData.income.serviceCharge + (editData.income.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0)).toLocaleString()}
                                     </span>
@@ -565,18 +569,18 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                     <div className="w-5 h-5 bg-rose-50 text-rose-600 rounded-md flex items-center justify-center">
                                       <TrendingDown size={12} />
                                     </div>
-                                    <h4 className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">ব্যয় বিবরণী</h4>
+                                    <h4 className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">{t.accounts.expenseDetails}</h4>
                                   </div>
                                   <div className="h-[1px] flex-1 mx-4 bg-rose-50"></div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-2">
                                   {/* Fixed Expense Fields */}
                                   {[
-                                    { label: 'বিদ্যুৎ বিল', field: 'electricity' },
-                                    { label: 'পানি বিল', field: 'water' },
-                                    { label: 'ময়লার বিল', field: 'garbage' },
-                                    { label: 'গার্ড/কেয়ারটেকার বেতন', field: 'caretaker' },
-                                    { label: 'নাইট গার্ড বিল', field: 'nightGuard' }
+                                    { label: t.accounts.fixedExpenses.electricity, field: 'electricity' },
+                                    { label: t.accounts.fixedExpenses.water, field: 'water' },
+                                    { label: t.accounts.fixedExpenses.garbage, field: 'garbage' },
+                                    { label: t.accounts.fixedExpenses.caretaker, field: 'caretaker' },
+                                    { label: t.accounts.fixedExpenses.nightGuard, field: 'nightGuard' }
                                   ].map((item) => (
                                     <div key={item.field} className="flex items-center justify-between text-xs">
                                       <span className="text-slate-500 font-medium">{item.label}</span>
@@ -596,7 +600,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                   {/* Dynamic Expense Title */}
                                   {(editData.expense.otherItems?.length > 0 || isAuthorized) && (
                                     <div className="pt-2 pb-1 border-t border-rose-50/50">
-                                      <p className="text-[9px] font-bold text-rose-500/70 uppercase tracking-tighter">অন্যান্য হতে ব্যয়</p>
+                                      <p className="text-[9px] font-bold text-rose-500/70 uppercase tracking-tighter">{t.accounts.otherExpense}</p>
                                     </div>
                                   )}
 
@@ -629,7 +633,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                         </>
                                       ) : (
                                         <div className="flex items-center justify-between w-full text-xs">
-                                          <span className="text-slate-500 font-medium">{item.label || 'অন্যান্য ব্যয়'}</span>
+                                          <span className="text-slate-500 font-medium">{item.label || t.accounts.otherExpense}</span>
                                           <span className="font-bold text-slate-700">৳ {item.amount.toLocaleString()}</span>
                                         </div>
                                       )}
@@ -643,13 +647,13 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                       className="w-full py-2 mt-1 border border-dashed border-rose-200 rounded-lg flex items-center justify-center gap-2 text-rose-600 hover:bg-rose-50 transition-all group"
                                     >
                                       <Plus size={14} className="group-hover:scale-110 transition-transform" />
-                                      <span className="text-[10px] font-bold uppercase tracking-wider">অন্যান্য ব্যয় যোগ করুন</span>
+                                      <span className="text-[10px] font-bold uppercase tracking-wider">{t.accounts.otherExpense} {t.common.add}</span>
                                     </button>
                                   )}
 
                                   {/* Expense Total */}
                                   <div className="pt-2 border-t border-rose-50 flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">মোট ব্যয়</span>
+                                    <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">{t.common.total} {t.common.expense}</span>
                                     <span className="text-xs font-black text-rose-700">
                                       ৳ {(editData.expense.water + editData.expense.electricity + editData.expense.garbage + editData.expense.caretaker + editData.expense.nightGuard + (editData.expense.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0)).toLocaleString()}
                                     </span>
@@ -669,14 +673,14 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                       <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center shadow-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                       </div>
-                                      <h4 className="text-[12px] font-black text-slate-800 uppercase tracking-widest">বিশেষ নোট / মন্তব্য</h4>
+                                      <h4 className="text-[12px] font-black text-slate-800 uppercase tracking-widest">{t.accounts.specialNote}</h4>
                                     </div>
                                     
                                     {isAuthorized ? (
                                       <textarea
                                         value={editData.income.note || ''}
                                         onChange={(e) => setEditData({ ...editData, income: { ...editData.income, note: e.target.value } })}
-                                        placeholder="এই মাসের জন্য কোনো বিশেষ নোট বা মন্তব্য লিখুন..."
+                                        placeholder={`${t.accounts.specialNote}...`}
                                         className="w-full bg-slate-50/50 border border-slate-200 rounded-lg p-3 text-xs font-medium text-slate-700 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 outline-none resize-none min-h-[80px] transition-all placeholder:text-slate-400"
                                       />
                                     ) : (
@@ -684,7 +688,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                         {editData.income.note ? (
                                           <p className="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">{editData.income.note}</p>
                                         ) : (
-                                          <p className="text-xs font-medium text-slate-400 italic">কোনো নোট বা মন্তব্য যোগ করা হয়নি</p>
+                                          <p className="text-xs font-medium text-slate-400 italic">{t.common.noData}</p>
                                         )}
                                       </div>
                                     )}
@@ -696,15 +700,15 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                               <div className="pt-4 border-t border-slate-100 space-y-3">
                                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
                                   <div className="flex justify-between items-center text-[10px] font-bold">
-                                    <span className="text-slate-500 uppercase">মোট আয়</span>
+                                    <span className="text-slate-500 uppercase">{t.common.total} {t.common.income}</span>
                                     <span className="text-emerald-600">৳ {(editData.income.surplus + editData.income.serviceCharge + (editData.income.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0)).toLocaleString()}</span>
                                   </div>
                                   <div className="flex justify-between items-center text-[10px] font-bold">
-                                    <span className="text-slate-500 uppercase">মোট ব্যয়</span>
+                                    <span className="text-slate-500 uppercase">{t.common.total} {t.common.expense}</span>
                                     <span className="text-rose-600">৳ {(editData.expense.water + editData.expense.electricity + editData.expense.garbage + editData.expense.caretaker + editData.expense.nightGuard + (editData.expense.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0)).toLocaleString()}</span>
                                   </div>
                                   <div className="pt-2 border-t border-slate-200 flex justify-between items-center">
-                                    <span className="text-[11px] font-black text-slate-700 uppercase">নিট উদ্বৃত্ত</span>
+                                    <span className="text-[11px] font-black text-slate-700 uppercase">{t.accounts.netSurplus}</span>
                                     <span className={`text-sm font-black ${((editData.income.surplus + editData.income.serviceCharge + (editData.income.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0)) - (editData.expense.water + editData.expense.electricity + editData.expense.garbage + editData.expense.caretaker + editData.expense.nightGuard + (editData.expense.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0))) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                       ৳{((editData.income.surplus + editData.income.serviceCharge + (editData.income.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0)) - (editData.expense.water + editData.expense.electricity + editData.expense.garbage + editData.expense.caretaker + editData.expense.nightGuard + (editData.expense.otherItems?.reduce((sum, i) => sum + i.amount, 0) || 0))).toLocaleString()}
                                     </span>
@@ -719,7 +723,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                       className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg text-xs font-bold shadow-md shadow-emerald-100 hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95"
                                     >
                                       {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                      সেভ করুন
+                                      {t.common.save}
                                     </button>
                                   </div>
                                 )}
@@ -755,8 +759,8 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                 <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <Lock size={24} />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800">নিরাপত্তা পিন</h3>
-                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">এডিট মোড আনলক করুন</p>
+                <h3 className="text-xl font-bold text-slate-800">{t.common.securityPin}</h3>
+                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">{t.common.unlockEdit}</p>
               </div>
 
               <form onSubmit={handlePinSubmit} className="space-y-6">
@@ -773,7 +777,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                   placeholder="••••"
                 />
                 {pinError && (
-                  <p className="text-[10px] text-center font-bold text-rose-500 uppercase">ভুল পিন কোড!</p>
+                  <p className="text-[10px] text-center font-bold text-rose-500 uppercase">{t.common.incorrectPin}</p>
                 )}
                 <div className="flex gap-3">
                   <button 
@@ -781,13 +785,13 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                     onClick={() => setShowPinModal(false)}
                     className="flex-1 py-3 text-xs font-bold text-slate-400 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                   >
-                    বাতিল
+                    {t.common.cancel}
                   </button>
                   <button 
                     type="submit"
                     className="flex-1 py-3 text-xs font-bold text-white bg-emerald-600 rounded-lg shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-colors"
                   >
-                    নিশ্চিত
+                    {t.common.confirm}
                   </button>
                 </div>
               </form>

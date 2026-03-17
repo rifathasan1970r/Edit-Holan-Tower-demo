@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Phone, MessageCircle, ShieldCheck, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface ContactViewProps {
   onBack: () => void;
@@ -16,38 +17,40 @@ interface Contact {
   theme?: 'indigo' | 'emerald' | 'amber' | 'blue' | 'purple';
 }
 
-const CONTACTS: Contact[] = [
-  {
-    id: '1',
-    name: 'মোঃ মোজাম্মেল হক',
-    role: 'সেক্রেটারি',
-    phone: '+8801718635845',
-    theme: 'indigo'
-  },
-  {
-    id: '2',
-    name: 'মো: শাহীন',
-    role: 'ক্যাশিয়ার',
-    phone: '+8801822532977',
-    theme: 'emerald'
-  },
-  {
-    id: '3',
-    name: 'মো গোলাম ফারুক',
-    role: 'কার্যকরী সদস্য',
-    phone: '+8801822940728',
-    theme: 'amber'
-  },
-  {
-    id: '4',
-    name: 'রিফাত',
-    role: 'নিরাপত্তা ও তত্ত্বাবধানে',
-    phone: '+8801310988954',
-    isSecurity: true,
-  }
-];
-
 export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => {
+  const { t, language } = useLanguage();
+
+  const CONTACTS: Contact[] = [
+    {
+      id: '1',
+      name: language === 'bn' ? 'মোঃ মোজাম্মেল হক' : 'Md. Mozammel Haque',
+      role: t.contactView.managementCommittee,
+      phone: '+8801718635845',
+      theme: 'indigo'
+    },
+    {
+      id: '2',
+      name: language === 'bn' ? 'মো: শাহীন' : 'Md. Shahin',
+      role: t.contactView.managementCommittee,
+      phone: '+8801822532977',
+      theme: 'emerald'
+    },
+    {
+      id: '3',
+      name: language === 'bn' ? 'মো গোলাম ফারুক' : 'Md. Golam Faruk',
+      role: t.contactView.managementCommittee,
+      phone: '+8801822940728',
+      theme: 'amber'
+    },
+    {
+      id: '4',
+      name: language === 'bn' ? 'রিফাত' : 'Rifat',
+      role: t.contactView.securityGuard,
+      phone: '+8801310988954',
+      isSecurity: true,
+    }
+  ];
+
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone}`;
   };
@@ -68,7 +71,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => 
         >
           <ArrowLeft size={20} />
         </button>
-        <h2 className="text-xl font-bold text-slate-800 dark:text-white">যোগাযোগ</h2>
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white">{t.contactView.title}</h2>
       </div>
 
       {/* Contact List */}
@@ -128,7 +131,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => 
                     : 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg shadow-indigo-200 dark:shadow-none'
                 }`}
               >
-                <Phone size={14} /> কল করুন
+                <Phone size={14} /> {t.contactView.call}
               </button>
               
               <button
@@ -139,7 +142,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => 
                     : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
-                <MessageCircle size={14} /> হোয়াটসঅ্যাপ বার্তা
+                <MessageCircle size={14} /> {t.contactView.whatsapp}
               </button>
             </div>
           </motion.div>
@@ -149,8 +152,8 @@ export const ContactView: React.FC<ContactViewProps> = ({ onBack, setView }) => 
       {/* Help Text */}
       <div className="mt-8 text-center px-4">
         <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
-          যেকোনো প্রয়োজনে উপরে উল্লেখিত নম্বরগুলোতে যোগাযোগ করুন।<br/>
-          জরুরী পরিস্থিতিতে সরাসরি কল করাই শ্রেয়।
+          {t.contactView.contactInstruction}<br/>
+          {t.contactView.emergencyCall}
         </p>
       </div>
     </>
