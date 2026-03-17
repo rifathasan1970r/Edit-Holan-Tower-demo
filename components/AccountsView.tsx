@@ -481,7 +481,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onBack, setView }) =
                                   {/* Fixed Income Fields */}
                                   {[
                                     { label: `${MONTHS[(MONTHS.indexOf(acc.month) - 1 + 12) % 12]} ${t.accounts.surplusFromLastMonth}`, field: 'surplus' },
-                                    { label: t.menu.serviceCharge, field: 'serviceCharge' }
+                                    { label: t.menuItems.service.label, field: 'serviceCharge' }
                                   ].map((item) => (
                                     <div key={item.field} className="flex items-center justify-between text-xs">
                                       <span className="text-slate-500 font-medium">{item.label}</span>
